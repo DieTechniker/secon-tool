@@ -2,8 +2,7 @@ apply plugin: "java-library"
 
 repositories {
 	maven {
-		url "http://nexus.dst.tk-inline.net:8081/nexus3/repository/public"
-		//jcenter()
+		jcenter()
 	}		
 }
 
