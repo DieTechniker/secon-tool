@@ -1,9 +1,7 @@
 apply plugin: "java-library"
 
 repositories {
-	maven {
-		jcenter()
-	}		
+	jcenter()
 }
 
 dependencies {
