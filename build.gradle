@@ -7,7 +7,8 @@ repositories {
 dependencies {
 	implementation 'org.slf4j:slf4j-api:1.7.7'
 	implementation 'org.bouncycastle:bcpkix-jdk15on:1.49'
-	implementation 'com.google.guava:guava:29.0-jre'
+	implementation 'commons-io:commons-io:2.5'
+//	implementation 'com.google.guava:guava:29.0-jre'
 	
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'	

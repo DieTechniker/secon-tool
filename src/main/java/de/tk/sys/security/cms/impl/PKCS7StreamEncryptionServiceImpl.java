@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.io.IOUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -53,8 +54,6 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.io.ByteStreams;
 
 import de.tk.sys.security.cms.api.PKCS7KeyLocator;
 import de.tk.sys.security.cms.padding.CMSAlgorithms;
@@ -94,7 +93,7 @@ class PKCS7StreamEncryptionServiceImpl {
 		try {
 			OutputStream enryptionStream = encrypt(output, identifier);
 			OutputStream signatureStream = sign(enryptionStream, identifier);
-			ByteStreams.copy(payload, signatureStream);
+			IOUtils.copy(payload, signatureStream);
 
 			signatureStream.close();
 			enryptionStream.close();
@@ -246,7 +245,7 @@ class PKCS7StreamEncryptionServiceImpl {
 		CMSTypedStream signedContent = sp.getSignedContent();
 		if (signedContent != null) {
 
-			ByteStreams.copy(signedContent.getContentStream(), new FileOutputStream(tempFile));
+			IOUtils.copy(signedContent.getContentStream(), new FileOutputStream(tempFile));
 			//signedContent.drain();
 		}
 		SignerInformationStore signers = sp.getSignerInfos();
