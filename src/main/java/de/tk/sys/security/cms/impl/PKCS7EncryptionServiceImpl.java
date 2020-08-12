@@ -19,10 +19,10 @@ import java.text.MessageFormat;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -216,7 +216,7 @@ public class PKCS7EncryptionServiceImpl implements PKCS7CMSService {
 	) throws IOException
 	{
 		Recipient recipient;
-		DERSequence parameters = (DERSequence) recipientFromContent.getKeyEncryptionAlgorithm().getParameters();
+		ASN1Sequence parameters = (ASN1Sequence) recipientFromContent.getKeyEncryptionAlgorithm().getParameters();
 		if (getKeySize(recipientCertificate) < 4096 || parameters.size() == 0) {
 			recipient =
 				new JceKeyTransEnvelopedRecipient(decryptionKey).setProvider(BouncyCastleProvider.PROVIDER_NAME);
