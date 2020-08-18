@@ -9,12 +9,11 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.Security;
 
+import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import com.google.common.io.ByteStreams;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,7 +47,7 @@ public class PKCS7EncryptionServiceImplTest {
 	}
 
 	private void verifyMessage(InputStream decryptedAndVerified, String plainText) throws IOException {
-		byte[] byteArray = ByteStreams.toByteArray(decryptedAndVerified);
+		byte[] byteArray = IOUtils.toByteArray(decryptedAndVerified);
 		assertEquals(plainText, new String(byteArray));
 	}
 

@@ -18,10 +18,11 @@ import java.text.MessageFormat;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.io.IOUtils;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -54,8 +55,6 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.io.ByteStreams;
 
 import de.tk.sys.security.cms.api.PKCS7CMSService;
 import de.tk.sys.security.cms.api.PKCS7KeyLocator;
@@ -115,7 +114,7 @@ public class PKCS7EncryptionServiceImpl implements PKCS7CMSService {
 		CertificateEncodingException, CMSException, IOException
 	{
 
-		CMSTypedData msg = new CMSProcessableByteArray(ByteStreams.toByteArray(payload));
+		CMSTypedData msg = new CMSProcessableByteArray(IOUtils.toByteArray(payload));
 
 		X509Certificate signatureCertificate = keyLocator.lookupSignatureCertificate();
 		PrivateKey signatureKey = keyLocator.lookupSignatureKey();
@@ -168,7 +167,7 @@ public class PKCS7EncryptionServiceImpl implements PKCS7CMSService {
 			);
 		}
 
-		CMSProcessableByteArray cmsData = new CMSProcessableByteArray(ByteStreams.toByteArray(payload));
+		CMSProcessableByteArray cmsData = new CMSProcessableByteArray(IOUtils.toByteArray(payload));
 
 		CMSEnvelopedData enveloped =
 			generator.generate(
@@ -217,7 +216,7 @@ public class PKCS7EncryptionServiceImpl implements PKCS7CMSService {
 	) throws IOException
 	{
 		Recipient recipient;
-		DERSequence parameters = (DERSequence) recipientFromContent.getKeyEncryptionAlgorithm().getParameters();
+		ASN1Sequence parameters = (ASN1Sequence) recipientFromContent.getKeyEncryptionAlgorithm().getParameters();
 		if (getKeySize(recipientCertificate) < 4096 || parameters.size() == 0) {
 			recipient =
 				new JceKeyTransEnvelopedRecipient(decryptionKey).setProvider(BouncyCastleProvider.PROVIDER_NAME);
