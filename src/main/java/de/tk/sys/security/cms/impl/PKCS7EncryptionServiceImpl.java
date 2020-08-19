@@ -240,6 +240,11 @@ public class PKCS7EncryptionServiceImpl implements PKCS7CMSService {
 			CMSSignedData cmsSignedData = new CMSSignedData(ContentInfo.getInstance(asnInputStream.readObject()));
 			SignerInformationStore signers = cmsSignedData.getSignerInfos();
 
+
+			if (signers.getSigners().isEmpty()) {
+				throw new IllegalStateException("Signaturprüfung fehlgeschlagen, da keine \"signers\"");
+			}
+
 			for (Object signerInfo : signers.getSigners()) {
 				SignerInformation signer = (SignerInformation) signerInfo;
 
