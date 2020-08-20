@@ -1,0 +1,11 @@
+*.bat           text eol=crlf
+*.gradle        text
+*.jar           binary
+*.java          text
+*.kts           text
+*.md            text
+*.p12           binary
+*.properties    text
+*.scala         text
+*.yml	    	text
+gradlew         text
