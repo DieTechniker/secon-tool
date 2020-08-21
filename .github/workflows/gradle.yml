@@ -25,8 +25,9 @@ jobs:
           restore-keys: ${{ runner.os }}
       - run: ./gradlew --console plain build
       - uses: actions/upload-artifact@v2
-        with: |
-          build/distributions
-          build/libs
-          build/scripts
-          build/scriptsShadow
+        with:
+          path: |
+            build/distributions/
+            build/libs/
+            build/scripts/
+            build/scriptsShadow/
