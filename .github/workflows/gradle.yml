@@ -23,7 +23,7 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}
-      - run: ./gradlew --console plain build
+      - run: ./gradlew build
       - uses: actions/upload-artifact@v2
         with:
           name: fat-jar
