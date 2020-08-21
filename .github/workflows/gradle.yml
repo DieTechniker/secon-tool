@@ -26,8 +26,9 @@ jobs:
       - run: ./gradlew --console plain build
       - uses: actions/upload-artifact@v2
         with:
-          path: |
-            build/distributions/
-            build/libs/
-            build/scripts/
-            build/scriptsShadow/
+          name: libs
+          path: build/libs/
+      - uses: actions/upload-artifact@v2
+        with:
+          name: distributions
+          path: build/distributions/
