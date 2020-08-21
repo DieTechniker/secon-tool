@@ -26,7 +26,7 @@ jobs:
       - run: ./gradlew --console plain build
       - uses: actions/upload-artifact@v2
         with:
-          name: distribution
+          name: zip-distribution
           path: |
             build/distributions/kks-*.zip
             !build/distributions/kks-shadow-*.zip
