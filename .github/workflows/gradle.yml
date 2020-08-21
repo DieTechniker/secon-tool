@@ -26,9 +26,17 @@ jobs:
       - run: ./gradlew --console plain build
       - uses: actions/upload-artifact@v2
         with:
-          name: libs
-          path: build/libs/
+          name: distribution
+          path: |
+            build/distributions/kks-*.zip
+            !build/distributions/kks-shadow-*.zip
       - uses: actions/upload-artifact@v2
         with:
-          name: distributions
-          path: build/distributions/
+          name: jar
+          path: |
+            build/libs/kks-*.jar
+            !build/libs/kks-*-all.jar
+      - uses: actions/upload-artifact@v2
+        with:
+          name: shadow-jar
+          path: build/libs/kks-*-all.jar
