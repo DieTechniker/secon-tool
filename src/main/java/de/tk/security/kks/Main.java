@@ -47,11 +47,15 @@ public final class Main {
                             "\n" +
                             "Usage:\n" +
                             "\n" +
-                            "\tkks -recipient <aliasname> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password>\n" +
+                            "\tTo sign and encrypt:\n" +
                             "\n" +
-                            "or\n" +
+                            "\t\tkks -recipient <aliasname> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password>\n" +
                             "\n" +
-                            "\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password>\n"
+                            "OR\n" +
+                            "\n" +
+                            "\tTo decrypt and verify:\n" +
+                            "\n" +
+                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password>\n"
             );
             System.exit(1);
         }

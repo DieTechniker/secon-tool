@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-group = "de.tk.sys.security"
+group = "de.tk.security"
 version = "0.0.1-SNAPSHOT"
 
 application {
-    mainClassName = "de.tk.sys.security.kks.Main"
+    mainClassName = "de.tk.security.kks.Main"
 }
 
 dependencies {
