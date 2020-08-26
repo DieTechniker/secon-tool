@@ -17,19 +17,15 @@
 package de.tk.security.kks;
 
 /**
- * Zeigt an, dass das für die Überprüfung einer digitalen Signatur benötigte Zertifikat nicht gefunden werden konnte.
- * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
+ * Zeigt an, dass das für die Überprüfung einer digitalen Signatur benötigte Zertifikat nicht gefunden werden konnte
+ * weil kein LDAP-Server zur Verfügung steht.
  *
  * @author Christian Schlichtherle
  */
-public class KksCertificateNotFoundException extends KksException {
+public class KksNoLdapConfiguredException extends KksCertificateNotFoundException {
 
     private static final long serialVersionUID = 0L;
 
-    KksCertificateNotFoundException() {
-    }
-
-    KksCertificateNotFoundException(String message) {
-        super(message);
+    KksNoLdapConfiguredException() {
     }
 }

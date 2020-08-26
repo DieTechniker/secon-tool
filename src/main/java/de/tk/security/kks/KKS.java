@@ -183,7 +183,7 @@ public final class KKS {
      */
     public static KksSubscriber subscriber(KeyStore ks, String alias, Callable<char[]> password) {
         return subscriber(ks, alias, password, () -> {
-            throw new KksCertificateNotFoundException("No LDAP configured");
+            throw new KksNoLdapConfiguredException();
         });
     }
 
