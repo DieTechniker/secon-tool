@@ -34,20 +34,20 @@ import static java.util.Objects.requireNonNull;
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author Christian Schlichtherle
  */
-final class KksKeyStoreSubscriber extends KksSubscriber {
+abstract class KeyStoreSubscriber extends KksSubscriber {
 
     private final KeyStore ks;
     private final String alias;
     private final Callable<char[]> password;
 
-    KksKeyStoreSubscriber(final KeyStore ks, final String alias, final Callable<char[]> password) {
+    KeyStoreSubscriber(final KeyStore ks, final String alias, final Callable<char[]> password) {
         this.ks = ks;
         this.alias = alias;
         this.password = password;
     }
 
     @Override
-    protected PrivateKey myPrivateKey() throws Exception {
+    protected final PrivateKey myPrivateKey() throws Exception {
         final char[] pw = password.call();
         try {
             return requireNonNull((PrivateKey) ks.getKey(alias, pw));
@@ -57,7 +57,7 @@ final class KksKeyStoreSubscriber extends KksSubscriber {
     }
 
     @Override
-    public X509Certificate myCertificate() throws Exception{
+    public final X509Certificate myCertificate() throws Exception{
         return requireNonNull((X509Certificate) ks.getCertificate(alias));
     }
 

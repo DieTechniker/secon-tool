@@ -41,8 +41,8 @@ import java.security.interfaces.RSAKey;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-import static de.tk.security.kks.KKS.socket;
 import static de.tk.security.kks.KKS.callable;
+import static de.tk.security.kks.KKS.socket;
 import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
 /**
@@ -168,17 +168,19 @@ public abstract class KksSubscriber {
         return rsaPk.getModulus().bitLength();
     }
 
-    private OutputStream encrypt(final OutputStream out, final X509Certificate... recipients) throws Exception {
+    private OutputStream encrypt(final OutputStream out, final Callable<X509Certificate>[] recipients)
+            throws Exception {
         final CMSEnvelopedDataStreamGenerator gen = new CMSEnvelopedDataStreamGenerator();
-        for (final X509Certificate recipient :  recipients) {
-            if (keySize(recipient) < 4096) {
+        for (final Callable<X509Certificate> recipient : recipients) {
+            final X509Certificate cert = recipient.call();
+            if (keySize(cert) < 4096) {
                 gen.addRecipientInfoGenerator(
-                        new JceKeyTransRecipientInfoGenerator(recipient)
+                        new JceKeyTransRecipientInfoGenerator(cert)
                                 .setProvider(PROVIDER_NAME)
                 );
             } else {
                 gen.addRecipientInfoGenerator(new OaepTransRecipientInfoGenerator(
-                        recipient,
+                        cert,
                         KksAlgorithms.ENCRYPTION_ALGORITHM_RSAES_OAEP
                 ));
             }
@@ -189,7 +191,7 @@ public abstract class KksSubscriber {
         return gen.open(out, encryptor);
     }
 
-    private XFunction<OutputStream, OutputStream> encrypt(X509Certificate... recipients) {
+    private XFunction<OutputStream, OutputStream> encrypt(Callable<X509Certificate>[] recipients) {
         return Streams.fixOutputstreamClose(out -> encrypt(out, recipients));
     }
 
@@ -214,13 +216,17 @@ public abstract class KksSubscriber {
 
     private final XFunction<InputStream, InputStream> decryptAndVerify = verify.compose(decrypt);
 
-    private Socket<OutputStream> signAndEncryptTo(Socket<OutputStream> output, X509Certificate... recipients) {
+    protected final Socket<OutputStream> signAndEncryptTo(
+            Socket<OutputStream> output,
+            Callable<X509Certificate>[] recipients
+    ) {
         return output.map(sign.compose(encrypt(recipients)));
     }
 
     /**
      * Gibt einen erneuerbaren Ausgabestrom zurück, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
      * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
+     * Die Empfänger werden durch die gegebenen Zertifikate identifiziert.
      * <p>
      * Der Aufrufer ist verpflichtet, die erzeugten Ausgabeströme zu {@linkplain OutputStream#close() schließen}, da
      * es andernfalls zu Datenverlust kommt!
@@ -231,11 +237,30 @@ public abstract class KksSubscriber {
             final X509Certificate recipient,
             final X509Certificate... others
     ) {
-        final X509Certificate[] recipients = new X509Certificate[others.length + 1];
-        recipients[0] = recipient;
-        System.arraycopy(others, 0, recipients, 1, others.length);
+        @SuppressWarnings("unchecked") final Callable<X509Certificate>[] recipients = new Callable[others.length + 1];
+        recipients[0] = () -> recipient;
+        for (int i = 0; i < others.length; ) {
+            final X509Certificate other = others[i];
+            recipients[++i] = () -> other;
+        }
         return callable(signAndEncryptTo(socket(output), recipients));
     }
+
+    /**
+     * Gibt einen erneuerbaren Ausgabestrom zurück, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
+     * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
+     * Die Empfänger werden durch die gegebenen Institutionskennzeichen identifiziert.
+     * Die entsprechenden Zertifikate werden vom LDAP-Server geladen.
+     * <p>
+     * Der Aufrufer ist verpflichtet, die erzeugten Ausgabeströme zu {@linkplain OutputStream#close() schließen}, da
+     * es andernfalls zu Datenverlust kommt!
+     * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
+     */
+    public abstract KksCallable<OutputStream> signAndEncryptTo(
+            Callable<OutputStream> output,
+            int recipientId,
+            int... otherIds
+    );
 
     private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input) {
         return input.map(decryptAndVerify);

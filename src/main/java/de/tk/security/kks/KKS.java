@@ -21,11 +21,15 @@ import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.bios.BIOS;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import javax.naming.Context;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
@@ -110,7 +114,8 @@ public final class KKS {
      * Erzeugt einen neuen Schlüsselbund, initialisiert ihn mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
      * unter Verwendung des gegebenen Passworts und gibt ihn zurück.
      * Der Inhalt des Eingabestroms muß dem PKCS12-Format entsprechen.
-     * Diese Komfortfunktion ist für den Gebrauch mit {@link #subscriber(KeyStore, String, Callable)} vorgesehen.
+     * Diese Komfortfunktion ist für den Gebrauch mit {@link #subscriber(KeyStore, String, Callable, Callable)}
+     * vorgesehen.
      */
     public static KeyStore keyStore(Callable<InputStream> source, Callable<char[]> password) throws KksException {
         return keyStore(source, password, "PKCS12");
@@ -120,7 +125,8 @@ public final class KKS {
      * Erzeugt einen neuen Schlüsselbund, initialisiert ihn mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
      * unter Verwendung des gegebenen Passworts und gibt ihn zurück.
      * Der Inhalt des Eingabestroms muß dem gegebenen Typ des Schlüsselbunds entsprechen.
-     * Diese Komfortfunktion ist für den Gebrauch mit {@link #subscriber(KeyStore, String, Callable)} vorgesehen.
+     * Diese Komfortfunktion ist für den Gebrauch mit {@link #subscriber(KeyStore, String, Callable, Callable)}
+     * vorgesehen.
      */
     public static KeyStore keyStore(
             final Callable<InputStream> source,
@@ -146,13 +152,64 @@ public final class KKS {
     }
 
     /**
-     * Gibt einen Kommunikationsteilnehmer zurück, der durch den gegebenen Eintrag mit den privaten Schlüssel und dem
+     * Erzeugt einen LDAP-Verbindungspool für den gegebenen URL und gibt ihn zurück.
+     * Der LDAP-Server muss anonymen Lesezugriff erlauben.
+     */
+    public static Callable<DirContext> ldapConnectionPool(final String url) {
+        if (!url.regionMatches(true, 0, "ldap://", 0, 7)) {
+            throw new IllegalArgumentException(url);
+        }
+        final Hashtable<String, String> e = newLdapEnvironment(url);
+        return () -> new InitialDirContext(e);
+    }
+
+    private static Hashtable<String, String> newLdapEnvironment(final String url) {
+        final Hashtable<String, String> env = new Hashtable<>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put(Context.PROVIDER_URL, url);
+        env.put("com.sun.jndi.ldap.connect.pool", "true");
+        return env;
+    }
+
+    /**
+     * Gibt einen Kommunikationsteilnehmer zurück, der durch den gegebenen Eintrag mit dem privaten Schlüssel und dem
      * gegebenen Passwort in dem gegebenen Schlüsselbund repräsentiert wird.
      * <p>
-     * Beachten Sie, dass der Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen Signaturen!
+     * Beachten Sie, dass der zurückgegebene Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen
+     * Signaturen!
+     *
+     * @see #keyStore(Callable, Callable)
+     * @see #ldapConnectionPool(String)
      */
     public static KksSubscriber subscriber(KeyStore ks, String alias, Callable<char[]> password) {
-        return new KksKeyStoreSubscriber(requireNonNull(ks), requireNonNull(alias), requireNonNull(password));
+        return subscriber(ks, alias, password, () -> {
+            throw new KksCertificateNotFoundException("No LDAP configured");
+        });
+    }
+
+    /**
+     * Gibt einen Kommunikationsteilnehmer zurück, der durch den gegebenen Eintrag mit dem privaten Schlüssel und dem
+     * gegebenen Passwort in dem gegebenen Schlüsselbund repräsentiert wird.
+     * Der gegebene LDAP-Verbindungspool wird für den Zugriff auf die Zertifikate verwendet, falls diese nicht im
+     * Schlüsselbund gefunden werden.
+     * Das Schema des LDAP-Servers muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
+     * <a href="https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf">Security-Schnittstelle (SECON) - Anlage 16</a>
+     * entsprechen.
+     * <p>
+     * Beachten Sie, dass der zurückgegebene Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen
+     * Signaturen!
+     *
+     * @see #keyStore(Callable, Callable)
+     * @see #ldapConnectionPool(String)
+     */
+    public static KksSubscriber subscriber(
+            KeyStore ks,
+            String alias,
+            Callable<char[]> password,
+            Callable<DirContext> ldapConnectionPool
+    ) {
+        return new LdapSubscriber(requireNonNull(ks), requireNonNull(alias), requireNonNull(password),
+                ldapConnectionPool::call);
     }
 
     /**
@@ -170,12 +227,7 @@ public final class KKS {
         return c::call;
     }
 
-    /**
-     * Gibt das aufrufbare Erzeugnis zurück.
-     * Falls dabei eine {@link Exception} ausgelöst wird, so wird diese in eine {@link KksException} verpackt.
-     * Eine {@link RuntimeException} wird dagegen NICHT verpackt!
-     */
-    public static <V> V call(Callable<V> c) throws KksException {
+    private static <V> V call(Callable<V> c) throws KksException {
         return callable(c).call();
     }
 
