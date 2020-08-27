@@ -1,0 +1,42 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}
+      - run: ./gradlew build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: fat-jar
+          path: build/libs/kks-*-all.jar
+      - uses: actions/upload-artifact@v2
+        with:
+          name: jar
+          path: |
+            build/libs/kks-*.jar
+            !build/libs/kks-*-all.jar
+      - uses: actions/upload-artifact@v2
+        with:
+          name: zip-distribution
+          path: |
+            build/distributions/kks-*.zip
+            !build/distributions/kks-shadow-*.zip
