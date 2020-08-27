@@ -38,12 +38,12 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 public class KksTest {
 
     @Test
-    public void aliceToBob() throws Exception {
+    void aliceToBob() throws Exception {
         assertKks("alice", "bob");
     }
 
     @Test
-    public void bobToAlice() throws Exception {
+    void bobToAlice() throws Exception {
         assertKks("bob", "alice");
     }
 

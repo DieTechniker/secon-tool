@@ -250,6 +250,8 @@ public abstract class KksSubscriber {
      * Gibt einen erneuerbaren Ausgabestrom zurück, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
      * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
      * Die Empfänger werden durch die gegebenen Institutionskennzeichen identifiziert.
+     * Diese fangen typischerweise mit "IK" oder "BN" an, gefolgt von einer neunstelligen Zahl gemäß
+     * <a href="https://www.gkv-datenaustausch.de/media/dokumente/faq/Gemeinsames_Rundschreiben_IK_2015-03.pdf">Rundschreiben ARGE-IK</a>.
      * Die entsprechenden Zertifikate werden vom LDAP-Server geladen.
      * <p>
      * Der Aufrufer ist verpflichtet, die erzeugten Ausgabeströme zu {@linkplain OutputStream#close() schließen}, da
@@ -258,8 +260,8 @@ public abstract class KksSubscriber {
      */
     public abstract KksCallable<OutputStream> signAndEncryptTo(
             Callable<OutputStream> output,
-            int recipientId,
-            int... otherIds
+            String recipientId,
+            String... otherIds
     );
 
     private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input) {

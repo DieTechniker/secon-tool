@@ -85,7 +85,7 @@ public final class Main {
         final KksSubscriber subscriber = subscriber(ks, param("alias"), param("keypass")::toCharArray, cp);
         final Callable<InputStream> source = () -> new FileInputStream(param("source"));
         final Callable<OutputStream> sink = () -> new FileOutputStream(param("sink"));
-        final Optional<Integer> recipientId = optParam("recipient").map(Integer::parseInt);
+        final Optional<String> recipientId = optParam("recipient");
         if (recipientId.isPresent()) {
             copy(source, subscriber.signAndEncryptTo(sink, recipientId.get()));
         } else {

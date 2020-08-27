@@ -23,14 +23,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static de.tk.security.kks.KKS.callable;
 import static de.tk.security.kks.KKS.socket;
+import static javax.naming.directory.SearchControls.OBJECT_SCOPE;
+import static javax.naming.directory.SearchControls.ONELEVEL_SCOPE;
 
 /**
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
@@ -61,34 +60,49 @@ final class LdapSubscriber extends KeyStoreSubscriber {
     @Override
     public KksCallable<OutputStream> signAndEncryptTo(
             final Callable<OutputStream> output,
-            final int recipientId,
-            final int... otherIds) {
+            final String recipientId,
+            final String... otherIds) {
         @SuppressWarnings("unchecked") final Callable<X509Certificate>[] recipients = new Callable[otherIds.length + 1];
         recipients[0] = () -> lookup(recipientId);
         for (int i = 0; i < otherIds.length; ) {
-            final int other = otherIds[i];
+            final String other = otherIds[i];
             recipients[++i] = () -> lookup(other);
         }
         return callable(signAndEncryptTo(socket(output), recipients));
     }
 
-    private Optional<X509Certificate> lookup(X509CertSelector selector) throws Exception {
-        return lookup(String.format("cn=0%X,%s", selector.getSerialNumber(), selector.getIssuerAsString()), "");
-    }
-
-    private X509Certificate lookup(int identifier) throws Exception {
-        return lookup("c=de", "(sn=IK" + identifier + ")")
-                .orElseThrow(() -> new KksCertificateNotFoundException("IK" + identifier));
-    }
-
-    private Optional<X509Certificate> lookup(final String base, final String filter) throws Exception {
+    private Optional<X509Certificate> lookup(final X509CertSelector selector) throws Exception {
+        final String base = String.format("cn=%06X,%s", selector.getSerialNumber(), selector.getIssuerAsString());
         final List<X509Certificate> result = new ArrayList<>();
         pool.accept(visitor -> {
-            for (byte[] bytes : visitor.<byte[]>search(base, filter, "userCertificate;binary")) {
+            for (byte[] bytes : visitor.<byte[]>search(base, "objectClass=pkiUser", OBJECT_SCOPE, "userCertificate;binary")) {
                 result.add(parseCertificate(bytes));
             }
         });
         return result.stream().max(CERTIFICATE_COMPARATOR);
+    }
+
+    private X509Certificate lookup(final String identifier) throws Exception {
+        final String base = identifier.length() == 9
+                ? "ou=IK" + identifier + ",o=LE,c=DE"
+                : "ou=BN" + identifier + ",o=AG,c=DE";
+        final List<X509Certificate> result = new ArrayList<>();
+        pool.accept(visitor -> {
+            for (final String dn : visitor.<String>search(base, "objectClass=*", ONELEVEL_SCOPE, "seeAlso")) {
+                for (byte[] bytes : visitor.<byte[]>search(dn, "objectClass=pkiUser", OBJECT_SCOPE, "userCertificate;binary")) {
+                    result.add(parseCertificate(bytes));
+                }
+            }
+/* Faster alternative for IKs, but doesn't work with all LDAP variants:
+            for (byte[] bytes : visitor.<byte[]>search("c=de", "sn=IK" + identifier, "userCertificate;binary")) {
+                result.add(parseCertificate(bytes));
+            }
+*/
+        });
+        return result
+                .stream()
+                .max(CERTIFICATE_COMPARATOR)
+                .orElseThrow(() -> new KksCertificateNotFoundException(identifier));
     }
 
     private X509Certificate parseCertificate(byte[] bytes) throws CertificateException {
