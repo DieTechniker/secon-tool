@@ -49,13 +49,13 @@ public final class Main {
                             "\n" +
                             "\tTo sign and encrypt:\n" +
                             "\n" +
-                            "\t\tkks -recipient <IK> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password> [-ldap <URL>]\n" +
+                            "\t\tkks -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <URL>]\n" +
                             "\n" +
                             "OR\n" +
                             "\n" +
                             "\tTo decrypt and verify:\n" +
                             "\n" +
-                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password> [-ldap <URL>]\n"
+                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <URL>]\n"
             );
             System.exit(1);
         }
@@ -82,7 +82,8 @@ public final class Main {
     private void run() throws KksException {
         final KeyStore ks = keyStore(
                 () -> new FileInputStream(param("keystore")),
-                param("storepass")::toCharArray
+                param("storepass")::toCharArray,
+                optParam("storetype").orElse("PKCS12")
         );
         final KksIdentity id = identity(ks, param("alias"), param("keypass")::toCharArray);
         final Callable<DirContext> pool = ldapConnectionPool(optParam("ldap").orElse("ldap://localhost"));
