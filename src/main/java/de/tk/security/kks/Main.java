@@ -49,13 +49,13 @@ public final class Main {
                             "\n" +
                             "\tTo sign and encrypt:\n" +
                             "\n" +
-                            "\t\tkks -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <URL>]\n" +
+                            "\t\tkks -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]\n" +
                             "\n" +
                             "OR\n" +
                             "\n" +
                             "\tTo decrypt and verify:\n" +
                             "\n" +
-                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <URL>]\n"
+                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]\n"
             );
             System.exit(1);
         }
