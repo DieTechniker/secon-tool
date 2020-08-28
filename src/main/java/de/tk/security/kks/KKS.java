@@ -204,12 +204,12 @@ public final class KKS {
             final KksDirectory directory,
             final KksDirectory... others) {
         final KksDirectory[] directories = new KksDirectory[others.length + 1];
-        directories[0] = directory;
+        directories[0] = requireNonNull(directory);
         for (int i = 0; i < others.length; ) {
             final KksDirectory other = others[i];
-            directories[++i] = other;
+            directories[++i] = requireNonNull(other);
         }
-        return new KksSubscriber(identity, directories);
+        return new KksSubscriber(requireNonNull(identity), directories);
     }
 
     /**

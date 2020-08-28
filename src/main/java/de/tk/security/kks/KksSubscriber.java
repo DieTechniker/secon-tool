@@ -43,6 +43,7 @@ import java.util.concurrent.Callable;
 
 import static de.tk.security.kks.KKS.callable;
 import static de.tk.security.kks.KKS.socket;
+import static java.util.Objects.requireNonNull;
 import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
 /**
@@ -54,6 +55,9 @@ import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
  */
 public final class KksSubscriber {
 
+    private volatile PrivateKey myPrivateKey;
+    private volatile X509Certificate myCertificate;
+
     private final KksIdentity identity;
     private final KksDirectory[] directories;
 
@@ -63,16 +67,13 @@ public final class KksSubscriber {
     }
 
     private PrivateKey myPrivateKey() throws Exception {
-        return identity.myPrivateKey();
+        final PrivateKey k = this.myPrivateKey;
+        return null != k ? k : (this.myPrivateKey = identity.myPrivateKey());
     }
 
-    /**
-     * Gibt das Zertifikat für diesen Kommunikationsteilnehmer zurück.
-     * Das Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um verschlüsselte
-     * Nachrichten zu entschlüsseln.
-     */
-    public X509Certificate myCertificate() throws Exception {
-        return identity.myCertificate();
+    private X509Certificate myCertificate() throws Exception {
+        final X509Certificate c = this.myCertificate;
+        return null != c ? c : (this.myCertificate = identity.myCertificate());
     }
 
     private X509Certificate certificate(final X509CertSelector selector) throws Exception {
@@ -255,9 +256,10 @@ public final class KksSubscriber {
             final X509Certificate... others
     ) {
         @SuppressWarnings("unchecked") final Callable<X509Certificate>[] recipients = new Callable[others.length + 1];
+        requireNonNull(recipient);
         recipients[0] = () -> recipient;
         for (int i = 0; i < others.length; ) {
-            final X509Certificate other = others[i];
+            final X509Certificate other = requireNonNull(others[i]);
             recipients[++i] = () -> other;
         }
         return callable(signAndEncryptTo(socket(output), recipients));
@@ -280,9 +282,10 @@ public final class KksSubscriber {
             final String recipientId,
             final String... otherIds) {
         @SuppressWarnings("unchecked") final Callable<X509Certificate>[] recipients = new Callable[otherIds.length + 1];
+        requireNonNull(recipientId);
         recipients[0] = () -> certificate(recipientId);
         for (int i = 0; i < otherIds.length; ) {
-            final String other = otherIds[i];
+            final String other = requireNonNull(otherIds[i]);
             recipients[++i] = () -> certificate(other);
         }
         return callable(signAndEncryptTo(socket(output), recipients));

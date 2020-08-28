@@ -66,16 +66,21 @@ public class KksTest {
     private static void assertKks(final String sender, final String recipient) throws Exception {
         final Callable<char[]> pw = "secret"::toCharArray;
         final KeyStore ks = keyStore(() -> KksTest.class.getResourceAsStream("keystore.p12"), pw);
-        final KksDirectory dir = directory(ks);
-        assertKks(subscriber(identity(ks, sender, pw), dir), subscriber(identity(ks, recipient, pw), dir));
+        assertKks(identity(ks, sender, pw), identity(ks, recipient, pw), directory(ks));
     }
 
-    private static void assertKks(final KksSubscriber sender, final KksSubscriber recipient) throws Exception {
-        final X509Certificate recipientCert = recipient.myCertificate();
+    private static void assertKks(
+            final KksIdentity senderId,
+            final KksIdentity recipientId,
+            final KksDirectory directory
+    ) throws Exception {
+        final KksSubscriber senderSub = subscriber(senderId, directory);
+        final KksSubscriber recipientSub = subscriber(recipientId, directory);
+        final X509Certificate recipientCert = recipientId.myCertificate();
         final Store plain = memory(), cipher = memory(), clone = memory();
         plain.content("Hello world!".getBytes());
-        copy(input(plain), sender.signAndEncryptTo(output(cipher), recipientCert));
-        copy(recipient.decryptAndVerifyFrom(input(cipher)), output(clone));
+        copy(input(plain), senderSub.signAndEncryptTo(output(cipher), recipientCert));
+        copy(recipientSub.decryptAndVerifyFrom(input(cipher)), output(clone));
         assertArrayEquals(plain.content(), clone.content());
     }
 
