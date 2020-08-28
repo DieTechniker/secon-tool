@@ -41,8 +41,15 @@ repositories {
     mavenCentral()
 }
 
+val encoding = "UTF-8"
+
 tasks.compileJava {
+    options.encoding = encoding
     options.release.set(8)
+}
+
+tasks.javadoc {
+    options.encoding = encoding
 }
 
 tasks.jar {
@@ -55,6 +62,11 @@ tasks.jar {
 
 tasks.shadowJar {
     minimize()
+}
+
+tasks.compileTestJava {
+    options.encoding = encoding
+    options.release.set(8)
 }
 
 tasks.test {
