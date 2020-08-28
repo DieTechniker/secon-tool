@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -87,7 +88,7 @@ public final class Main {
         final KksIdentity identity = identity(ks, param("alias"), param("keypass")::toCharArray);
         final KksDirectory directory = directory(ks);
         final KksSubscriber sub = optParam("ldap")
-                .map(url -> directory(ldapConnectionPool(url)))
+                .map(url -> directory(URI.create(url)))
                 .map(dir -> subscriber(identity, directory, dir))
                 .orElseGet(() -> subscriber(identity, directory));
         final Callable<InputStream> source = () -> new FileInputStream(param("source"));

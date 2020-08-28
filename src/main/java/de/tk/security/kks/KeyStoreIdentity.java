@@ -47,7 +47,7 @@ final class KeyStoreIdentity implements KksIdentity {
     }
 
     @Override
-    public PrivateKey myPrivateKey() throws Exception {
+    public PrivateKey privateKey() throws Exception {
         final char[] pw = password.call();
         try {
             return requireNonNull((PrivateKey) ks.getKey(alias, pw));
@@ -57,7 +57,7 @@ final class KeyStoreIdentity implements KksIdentity {
     }
 
     @Override
-    public X509Certificate myCertificate() throws Exception{
+    public X509Certificate certificate() throws Exception{
         return requireNonNull((X509Certificate) ks.getCertificate(alias));
     }
 }

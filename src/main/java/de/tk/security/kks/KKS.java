@@ -26,6 +26,7 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.security.KeyStore;
 import java.security.Security;
 import java.util.Arrays;
@@ -117,8 +118,6 @@ public final class KKS {
      * Erzeugt einen neuen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
      * unter Verwendung des gegebenen Passworts.
      * Der Inhalt des Eingabestroms muß dem PKCS12-Format entsprechen.
-     * Diese Komfortfunktion ist für den Gebrauch mit den Funktionen {@link #identity(KeyStore, String, Callable)} und
-     * {@link #directory(KeyStore)} vorgesehen.
      */
     public static KeyStore keyStore(Callable<InputStream> source, Callable<char[]> password) throws KksException {
         return keyStore(source, password, "PKCS12");
@@ -128,8 +127,6 @@ public final class KKS {
      * Erzeugt einen neuen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
      * unter Verwendung des gegebenen Passworts.
      * Der Inhalt des Eingabestroms muß dem gegebenen Typ des Schlüsselbunds entsprechen.
-     * Diese Komfortfunktion ist für den Gebrauch mit den Funktionen {@link #identity(KeyStore, String, Callable)} und
-     * {@link #directory(KeyStore)} vorgesehen.
      */
     public static KeyStore keyStore(
             Callable<InputStream> source,
@@ -155,26 +152,6 @@ public final class KKS {
     }
 
     /**
-     * Erzeugt einen LDAP-Verbindungspool für den gegebenen URL.
-     * Der LDAP-Server muss anonymen Lesezugriff erlauben.
-     */
-    public static Callable<DirContext> ldapConnectionPool(final String url) {
-        if (!url.regionMatches(true, 0, "ldap://", 0, 7)) {
-            throw new IllegalArgumentException(url);
-        }
-        final Hashtable<String, String> e = newLdapEnvironment(url);
-        return () -> new InitialDirContext(e);
-    }
-
-    private static Hashtable<String, String> newLdapEnvironment(final String url) {
-        final Hashtable<String, String> env = new Hashtable<>();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.PROVIDER_URL, url);
-        env.put("com.sun.jndi.ldap.connect.pool", "true");
-        return env;
-    }
-
-    /**
      * Erzeugt eine Identität für einen Kommunikationsteilnehmer im KKS, welche durch einen privaten Schlüssel und das
      * dazugehörige Zertifikat gekennzeichnet ist.
      * Der Schlüssel und das Zertifikat werden aus dem gegebenen Schlüsselbund unter Verwendung des gegebenen
@@ -189,27 +166,56 @@ public final class KKS {
      * Die Zertifikate werden aus dem gegebenen Schlüsselbund geladen.
      */
     public static KksDirectory directory(KeyStore ks) {
-        return new KeyStoreDirectory(ks);
+        return new KeyStoreDirectory(requireNonNull(ks));
     }
 
     /**
      * Erzeugt einen Verzeichnisdienst für Zertifikate im KKS.
      * Die Zertifikate werden aus einem LDAP-Server unter Verwendung des gegebenen Verbindungspools geladen.
+     * <p>
      * Das Schema des LDAP-Servers muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
      * <a href="https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf">Security-Schnittstelle (SECON) - Anlage 16</a>
      * entsprechen.
+     *
+     * @param pool Ein Pool von Verbindungen zum LDAP-Server.
      */
-    public static KksDirectory directory(Callable<DirContext> ldapConnectionPool) {
-        return new LdapDirectory(requireNonNull(ldapConnectionPool)::call);
+    public static KksDirectory directory(Callable<DirContext> pool) {
+        return new LdapDirectory(requireNonNull(pool)::call);
+    }
+
+    /**
+     * Erzeugt einen LDAP-Verbindungspool für den gegebenen URL.
+     * Die Zertifikate werden aus einem LDAP-Server unter Verwendung des gegebenen URLs geladen.
+     * Alle Verbindungen werden in einem Pool verwaltet.
+     * Der LDAP-Server muss anonymen Lesezugriff erlauben.
+     * <p>
+     * Das Schema des LDAP-Servers muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
+     * <a href="https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf">Security-Schnittstelle (SECON) - Anlage 16</a>
+     * entsprechen.
+     *
+     * @param url Ein URL mit dem Schema {@code ldap}.
+     */
+    public static KksDirectory directory(final URI url) {
+        if (url.getScheme().equalsIgnoreCase("ldap")) {
+            final Hashtable<String, String> e = newLdapEnvironment(url);
+            return directory(() -> new InitialDirContext(e));
+        } else {
+            throw new UnsupportedOperationException(url.getScheme());
+        }
+    }
+
+    private static Hashtable<String, String> newLdapEnvironment(final URI url) {
+        final Hashtable<String, String> env = new Hashtable<>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put(Context.PROVIDER_URL, url.toString());
+        env.put("com.sun.jndi.ldap.connect.pool", "true");
+        return env;
     }
 
     /**
      * Erzeugt einen Kommunikationsteilnehmer unter Verwendung der gegebenen Identität und der geordneten Liste von
      * Verzeichnisdiensten für Zertifikate im KKS.
      * Beachten Sie, dass der Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen Signaturen!
-     *
-     * @see #keyStore(Callable, Callable)
-     * @see #ldapConnectionPool(String)
      */
     public static KksSubscriber subscriber(
             final KksIdentity identity,

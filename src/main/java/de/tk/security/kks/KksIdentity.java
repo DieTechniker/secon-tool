@@ -33,12 +33,12 @@ public interface KksIdentity {
      * Der private Schlüssel wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um
      * verschlüsselte Nachrichten zu entschlüsseln.
      */
-    PrivateKey myPrivateKey() throws Exception;
+    PrivateKey privateKey() throws Exception;
 
     /**
      * Gibt das Zertifikat für diesen Kommunikationsteilnehmer zurück.
      * Das Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um verschlüsselte
      * Nachrichten zu entschlüsseln.
      */
-    X509Certificate myCertificate() throws Exception;
+    X509Certificate certificate() throws Exception;
 }

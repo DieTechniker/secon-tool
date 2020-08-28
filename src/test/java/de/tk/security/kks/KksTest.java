@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.URI;
 import java.security.KeyStore;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
@@ -55,7 +56,7 @@ public class KksTest {
     @Tag("ldap")
     @Test
     void searchId() throws Exception {
-        final KksDirectory dir = directory(ldapConnectionPool("ldap://localhost"));
+        final KksDirectory dir = directory(URI.create("ldap://localhost"));
         final X509CertSelector sel = new X509CertSelector();
         sel.setSerialNumber(new BigInteger("325D8", 16));
         sel.setIssuer("o=ITSG TrustCenter fuer sonstige Leistungserbringer,c=de");
@@ -76,7 +77,7 @@ public class KksTest {
     ) throws Exception {
         final KksSubscriber senderSub = subscriber(senderId, directory);
         final KksSubscriber recipientSub = subscriber(recipientId, directory);
-        final X509Certificate recipientCert = recipientId.myCertificate();
+        final X509Certificate recipientCert = recipientId.certificate();
         final Store plain = memory(), cipher = memory(), clone = memory();
         plain.content("Hello world!".getBytes());
         copy(input(plain), senderSub.signAndEncryptTo(output(cipher), recipientCert));

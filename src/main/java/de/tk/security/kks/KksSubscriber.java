@@ -55,8 +55,8 @@ import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
  */
 public final class KksSubscriber {
 
-    private volatile PrivateKey myPrivateKey;
-    private volatile X509Certificate myCertificate;
+    private volatile PrivateKey privateKey;
+    private volatile X509Certificate certificate;
 
     private final KksIdentity identity;
     private final KksDirectory[] directories;
@@ -66,14 +66,14 @@ public final class KksSubscriber {
         this.directories = directories;
     }
 
-    private PrivateKey myPrivateKey() throws Exception {
-        final PrivateKey k = this.myPrivateKey;
-        return null != k ? k : (this.myPrivateKey = identity.myPrivateKey());
+    private PrivateKey privateKey() throws Exception {
+        final PrivateKey k = this.privateKey;
+        return null != k ? k : (this.privateKey = identity.privateKey());
     }
 
-    private X509Certificate myCertificate() throws Exception {
-        final X509Certificate c = this.myCertificate;
-        return null != c ? c : (this.myCertificate = identity.myCertificate());
+    private X509Certificate certificate() throws Exception {
+        final X509Certificate c = this.certificate;
+        return null != c ? c : (this.certificate = identity.certificate());
     }
 
     private X509Certificate certificate(final X509CertSelector selector) throws Exception {
@@ -97,8 +97,8 @@ public final class KksSubscriber {
     }
 
     private OutputStream sign(final OutputStream out) throws Exception {
-        final X509Certificate cert = myCertificate();
-        final PrivateKey key = myPrivateKey();
+        final X509Certificate cert = certificate();
+        final PrivateKey key = privateKey();
         final ASN1ObjectIdentifier sigAlgOID = new ASN1ObjectIdentifier(cert.getSigAlgOID());
         final ContentSigner signer;
         if (PKCSObjectIdentifiers.id_RSASSA_PSS.equals(sigAlgOID)) {
@@ -217,8 +217,8 @@ public final class KksSubscriber {
     }
 
     private InputStream decrypt(final InputStream in) throws Exception {
-        final X509Certificate cert = myCertificate();
-        final PrivateKey key = myPrivateKey();
+        final X509Certificate cert = certificate();
+        final PrivateKey key = privateKey();
         final RecipientInformation info = Optional.ofNullable(
                 new CMSEnvelopedDataParser(new BufferedInputStream(in))
                         .getRecipientInfos()
