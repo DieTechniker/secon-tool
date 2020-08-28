@@ -115,8 +115,8 @@ public final class KKS {
     }
 
     /**
-     * Erzeugt einen neuen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
-     * unter Verwendung des gegebenen Passworts.
+     * Erzeugt einen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom unter
+     * Verwendung des gegebenen Passworts.
      * Der Inhalt des Eingabestroms muß dem PKCS12-Format entsprechen.
      */
     public static KeyStore keyStore(Callable<InputStream> source, Callable<char[]> password) throws KksException {
@@ -124,8 +124,8 @@ public final class KKS {
     }
 
     /**
-     * Erzeugt einen neuen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
-     * unter Verwendung des gegebenen Passworts.
+     * Erzeugt einen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom unter
+     * Verwendung des gegebenen Passworts.
      * Der Inhalt des Eingabestroms muß dem gegebenen Typ des Schlüsselbunds entsprechen.
      */
     public static KeyStore keyStore(
