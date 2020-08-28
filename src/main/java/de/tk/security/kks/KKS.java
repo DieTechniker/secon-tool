@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.Security;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.Callable;
@@ -49,7 +48,6 @@ import static java.util.Objects.requireNonNull;
  * <pre>{@code
  * import java.io.*;
  * import java.security.*;
- * import java.security.cert.*;
  * import java.util.concurrent.Callable;
  *
  * import de.tk.security.kks.*;
@@ -61,27 +59,31 @@ import static java.util.Objects.requireNonNull;
  *     public static void main(String... unused) throws KksException {
  *         // Wir benötigen einen Schlüsselbund mit jeweils einem eigenen privaten Schlüsselbund-Eintrag für Alice und
  *         // Bob:
- *         KeyStore ks = keyStore(() -> new FileInputStream("keystore.p12"), "secret"::toCharArray);
+ *         KeyStore keyStore = keyStore(() -> new FileInputStream("keystore.p12"), "secret"::toCharArray);
  *
- *         // Außerdem benötigen beide Kommunikationsteilnehmer einen eigenen Kontext für den Versand und Empfang von
+ *         // Als nächstes erzeugen beide Kommunikationsteilnehmer jeweils eine eigene Identität:
+ *         KksIdentity aliceId = identity(keyStore, "Alice's alias", "Alice's password"::toCharArray);
+ *         KksIdentity bobId = identity(keyStore, "Bob's alias", "Bob's password"::toCharArray);
+ *
+ *         // Außerdem verwenden beide Kommunikationsteilnehmer denselben Schlüsselbund als Verzeichnisdienst für
+ *         // Zertifikate:
+ *         KksDirectory keyStoreDir = directory(keyStore);
+ *
+ *         // Beide Kommunikationsteilnehmer benötigen jeweils einen eigenen Kontext für den Versand und Empfang von
  *         // Nachrichten:
- *         KksSubscriber alice = subscriber(ks, "Alice's alias", "Alice's password"::toCharArray);
- *         KksSubscriber bob = subscriber(ks, "Bob's alias", "Bob's password"::toCharArray);
- *
- *         // Außerdem benötigen wir ein Zertifikat, das den Nachrichtenempfänger repräsentiert.
- *         // In diesem Fall können wir das Zertifikat einfach aus dem Kontext für Bob entnehmen.
- *         // Da der Zugriff auf Bob's Zertifikat eine beliebige `Exception` auslösen kann, verwenden wir `call(...)` um
- *         // diese ggf. in eine `KksException` zu verpacken:
- *         X509Certificate bobsCert = call(bob::myCertificate);
+ *         KksSubscriber aliceSub = subscriber(aliceId, keyStoreDir);
+ *         KksSubscriber bobSub = subscriber(bobId, keyStoreDir);
  *
  *         // Nun kann Alice eine Nachricht digital signieren und für Bob verschlüsseln indem sie erneuerbare Ein-
  *         // und Ausgabeströme entsprechend ihrer Verwendung dekoriert und dann die Daten mit Hilfe dieser erneuerbaren
  *         // Ströme einfach kopiert.
  *         // Der Einfachheit halber verwenden wir in diesem Beispiel Dateien, wobei anfangs lediglich die Datei
- *         // `message.txt` existieren muss - alle folgenden Dateien werden ggf. überschrieben:
+ *         // `message.txt` existieren muss - alle folgenden Dateien werden ggf. überschrieben.
+ *         // Da Alice den Schlüsselbund gleichzeitig als Zertifikats-Verzeichnisdienst verwendet, kann sie Bob einfach
+ *         // durch seinen Aliasnamen identifizieren:
  *         Callable<InputStream> plainIn = () -> new FileInputStream("message.txt");
- *         Callable<OutputStream> cipherOut = alice.signAndEncryptTo(() -> new FileOutputStream("message.cms"),
- *                 bobsCert);
+ *         Callable<OutputStream> cipherOut = aliceSub.signAndEncryptTo(() -> new FileOutputStream("message.cms"),
+ *                 "Bob's alias");
  *         copy(plainIn, cipherOut);
  *
  *         // ... und Bob kann die Nachricht entschlüsseln und die digitale Signatur von Alice überprüfen indem er
@@ -90,7 +92,7 @@ import static java.util.Objects.requireNonNull;
  *         // Wenn die Überprüfung der digitalen Signatur fehlschlägt, dann wird die `close()`-Methode des erneuerbaren
  *         // Ausgabestroms `plainOut` eine `KksInvalidSignatureException` auslösen - dies passiert verdeckt innerhalb
  *         // des `copy(...)`-Aufrufs:
- *         Callable<InputStream> cipherIn = bob.decryptAndVerifyFrom(() -> new FileInputStream("message.cms"));
+ *         Callable<InputStream> cipherIn = bobSub.decryptAndVerifyFrom(() -> new FileInputStream("message.cms"));
  *         Callable<OutputStream> plainOut = () -> new FileOutputStream("clonedmessage.txt");
  *         copy(cipherIn, plainOut);
  *     }
@@ -112,27 +114,27 @@ public final class KKS {
     }
 
     /**
-     * Erzeugt einen neuen Schlüsselbund, initialisiert ihn mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
-     * unter Verwendung des gegebenen Passworts und gibt ihn zurück.
+     * Erzeugt einen neuen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
+     * unter Verwendung des gegebenen Passworts.
      * Der Inhalt des Eingabestroms muß dem PKCS12-Format entsprechen.
-     * Diese Komfortfunktion ist für den Gebrauch mit {@link #subscriber(KeyStore, String, Callable, Callable)}
-     * vorgesehen.
+     * Diese Komfortfunktion ist für den Gebrauch mit den Funktionen {@link #identity(KeyStore, String, Callable)} und
+     * {@link #directory(KeyStore)} vorgesehen.
      */
     public static KeyStore keyStore(Callable<InputStream> source, Callable<char[]> password) throws KksException {
         return keyStore(source, password, "PKCS12");
     }
 
     /**
-     * Erzeugt einen neuen Schlüsselbund, initialisiert ihn mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
-     * unter Verwendung des gegebenen Passworts und gibt ihn zurück.
+     * Erzeugt einen neuen initialisierten Schlüsselbund mit dem Inhalt aus dem gegebenen erneuerbaren Eingabestrom
+     * unter Verwendung des gegebenen Passworts.
      * Der Inhalt des Eingabestroms muß dem gegebenen Typ des Schlüsselbunds entsprechen.
-     * Diese Komfortfunktion ist für den Gebrauch mit {@link #subscriber(KeyStore, String, Callable, Callable)}
-     * vorgesehen.
+     * Diese Komfortfunktion ist für den Gebrauch mit den Funktionen {@link #identity(KeyStore, String, Callable)} und
+     * {@link #directory(KeyStore)} vorgesehen.
      */
     public static KeyStore keyStore(
-            final Callable<InputStream> source,
-            final Callable<char[]> password,
-            final String type
+            Callable<InputStream> source,
+            Callable<char[]> password,
+            String type
     ) throws KksException {
         return call(() -> keyStore(() -> socket(source), password, type));
     }
@@ -153,7 +155,7 @@ public final class KKS {
     }
 
     /**
-     * Erzeugt einen LDAP-Verbindungspool für den gegebenen URL und gibt ihn zurück.
+     * Erzeugt einen LDAP-Verbindungspool für den gegebenen URL.
      * Der LDAP-Server muss anonymen Lesezugriff erlauben.
      */
     public static Callable<DirContext> ldapConnectionPool(final String url) {
@@ -172,29 +174,39 @@ public final class KKS {
         return env;
     }
 
+    /**
+     * Erzeugt eine Identität für einen Kommunikationsteilnehmer im KKS, welche durch einen privaten Schlüssel und das
+     * dazugehörige Zertifikat gekennzeichnet ist.
+     * Der Schlüssel und das Zertifikat werden aus dem gegebenen Schlüsselbund unter Verwendung des gegebenen
+     * Aliasnamens mit dem gegebenen Passwort geladen.
+     */
     public static KksIdentity identity(KeyStore ks, String alias, Callable<char[]> password) {
         return new KeyStoreIdentity(requireNonNull(ks), requireNonNull(alias), requireNonNull(password));
     }
 
+    /**
+     * Erzeugt einen Verzeichnisdienst für Zertifikate im KKS.
+     * Die Zertifikate werden aus dem gegebenen Schlüsselbund geladen.
+     */
     public static KksDirectory directory(KeyStore ks) {
         return new KeyStoreDirectory(ks);
     }
 
+    /**
+     * Erzeugt einen Verzeichnisdienst für Zertifikate im KKS.
+     * Die Zertifikate werden aus einem LDAP-Server unter Verwendung des gegebenen Verbindungspools geladen.
+     * Das Schema des LDAP-Servers muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
+     * <a href="https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf">Security-Schnittstelle (SECON) - Anlage 16</a>
+     * entsprechen.
+     */
     public static KksDirectory directory(Callable<DirContext> ldapConnectionPool) {
         return new LdapDirectory(requireNonNull(ldapConnectionPool)::call);
     }
 
     /**
-     * Gibt einen Kommunikationsteilnehmer zurück, der durch den gegebenen Eintrag mit dem privaten Schlüssel und dem
-     * gegebenen Passwort in dem gegebenen Schlüsselbund repräsentiert wird.
-     * Der gegebene LDAP-Verbindungspool wird für den Zugriff auf die Zertifikate verwendet, falls diese nicht im
-     * Schlüsselbund gefunden werden.
-     * Das Schema des LDAP-Servers muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
-     * <a href="https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf">Security-Schnittstelle (SECON) - Anlage 16</a>
-     * entsprechen.
-     * <p>
-     * Beachten Sie, dass der zurückgegebene Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen
-     * Signaturen!
+     * Erzeugt einen Kommunikationsteilnehmer unter Verwendung der gegebenen Identität und der geordneten Liste von
+     * Verzeichnisdiensten für Zertifikate im KKS.
+     * Beachten Sie, dass der Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen Signaturen!
      *
      * @see #keyStore(Callable, Callable)
      * @see #ldapConnectionPool(String)

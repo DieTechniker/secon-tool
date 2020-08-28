@@ -20,7 +20,8 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 /**
- * Identifiziert einen Kommunikationsteilnehmer im KKS.
+ * Identifiziert einen Kommunikationsteilnehmer im KKS, welche durch einen privaten Schlüssel und das dazugehörige
+ * Zertifikat gekennzeichnet ist.
  * Dies ist eine Schnittstelle für Serviceprovider.
  *
  * @author Christian Schlichtherle

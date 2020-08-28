@@ -242,7 +242,7 @@ public final class KksSubscriber {
     }
 
     /**
-     * Gibt einen erneuerbaren Ausgabestrom zurück, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
+     * Erzeugt einen erneuerbaren Ausgabestrom, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
      * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
      * Die Empfänger werden durch die gegebenen Zertifikate identifiziert.
      * <p>
@@ -266,7 +266,7 @@ public final class KksSubscriber {
     }
 
     /**
-     * Gibt einen erneuerbaren Ausgabestrom zurück, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
+     * Erzeugt einen erneuerbaren Ausgabestrom, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
      * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
      * Die Empfänger werden durch die gegebenen Institutionskennzeichen identifiziert.
      * Diese fangen typischerweise mit "IK" oder "BN" an, gefolgt von einer neunstelligen Zahl gemäß
@@ -296,7 +296,7 @@ public final class KksSubscriber {
     }
 
     /**
-     * Gibt einen erneuerbaren Eingabestrom zurück, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
+     * Erzeugt einen erneuerbaren Eingabestrom, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
      * gelesen werden, entschlüsselt und die digitalen Signaturen überprüft.
      * <p>
      * Der Aufrufer ist verpflichtet, die erzeugten Eingabeströme zu {@linkplain InputStream#close() schließen}, da
