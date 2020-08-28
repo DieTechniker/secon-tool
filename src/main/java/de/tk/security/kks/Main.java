@@ -16,7 +16,6 @@
  */
 package de.tk.security.kks;
 
-import javax.naming.directory.DirContext;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -85,9 +84,12 @@ public final class Main {
                 param("storepass")::toCharArray,
                 optParam("storetype").orElse("PKCS12")
         );
-        final KksIdentity id = identity(ks, param("alias"), param("keypass")::toCharArray);
-        final Callable<DirContext> pool = ldapConnectionPool(optParam("ldap").orElse("ldap://localhost"));
-        final KksSubscriber sub = subscriber(id, directory(pool));
+        final KksIdentity identity = identity(ks, param("alias"), param("keypass")::toCharArray);
+        final KksDirectory directory = directory(ks);
+        final KksSubscriber sub = optParam("ldap")
+                .map(url -> directory(ldapConnectionPool(url)))
+                .map(dir -> subscriber(identity, directory, dir))
+                .orElseGet(() -> subscriber(identity, directory));
         final Callable<InputStream> source = () -> new FileInputStream(param("source"));
         final Callable<OutputStream> sink = () -> new FileOutputStream(param("sink"));
         final Optional<String> recipientId = optParam("recipient");
