@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.Security;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.Callable;
@@ -171,20 +172,16 @@ public final class KKS {
         return env;
     }
 
-    /**
-     * Gibt einen Kommunikationsteilnehmer zurück, der durch den gegebenen Eintrag mit dem privaten Schlüssel und dem
-     * gegebenen Passwort in dem gegebenen Schlüsselbund repräsentiert wird.
-     * <p>
-     * Beachten Sie, dass der zurückgegebene Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen
-     * Signaturen!
-     *
-     * @see #keyStore(Callable, Callable)
-     * @see #ldapConnectionPool(String)
-     */
-    public static KksSubscriber subscriber(KeyStore ks, String alias, Callable<char[]> password) {
-        return subscriber(ks, alias, password, () -> {
-            throw new KksNoLdapConfiguredException();
-        });
+    public static KksIdentity identity(KeyStore ks, String alias, Callable<char[]> password) {
+        return new KeyStoreIdentity(requireNonNull(ks), requireNonNull(alias), requireNonNull(password));
+    }
+
+    public static KksDirectory directory(KeyStore ks) {
+        return new KeyStoreDirectory(ks);
+    }
+
+    public static KksDirectory directory(Callable<DirContext> ldapConnectionPool) {
+        return new LdapDirectory(requireNonNull(ldapConnectionPool)::call);
     }
 
     /**
@@ -203,13 +200,16 @@ public final class KKS {
      * @see #ldapConnectionPool(String)
      */
     public static KksSubscriber subscriber(
-            KeyStore ks,
-            String alias,
-            Callable<char[]> password,
-            Callable<DirContext> ldapConnectionPool
-    ) {
-        return new LdapSubscriber(requireNonNull(ks), requireNonNull(alias), requireNonNull(password),
-                ldapConnectionPool::call);
+            final KksIdentity identity,
+            final KksDirectory directory,
+            final KksDirectory... others) {
+        final KksDirectory[] directories = new KksDirectory[others.length + 1];
+        directories[0] = directory;
+        for (int i = 0; i < others.length; ) {
+            final KksDirectory other = others[i];
+            directories[++i] = other;
+        }
+        return new KksSubscriber(identity, directories);
     }
 
     /**

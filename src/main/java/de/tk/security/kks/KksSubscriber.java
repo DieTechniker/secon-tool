@@ -52,27 +52,48 @@ import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author Christian Schlichtherle
  */
-public abstract class KksSubscriber {
+public final class KksSubscriber {
 
-    /**
-     * Gibt den privaten Schlüssel für diesen Kommunikationsteilnehmer zurück.
-     * Der private Schlüssel wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um
-     * verschlüsselte Nachrichten zu entschlüsseln.
-     */
-    protected abstract PrivateKey myPrivateKey() throws Exception;
+    private final KksIdentity identity;
+    private final KksDirectory[] directories;
+
+    KksSubscriber(final KksIdentity identity, final KksDirectory[] directories) {
+        this.identity = identity;
+        this.directories = directories;
+    }
+
+    private PrivateKey myPrivateKey() throws Exception {
+        return identity.myPrivateKey();
+    }
 
     /**
      * Gibt das Zertifikat für diesen Kommunikationsteilnehmer zurück.
      * Das Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um verschlüsselte
      * Nachrichten zu entschlüsseln.
      */
-    public abstract X509Certificate myCertificate() throws Exception;
+    public X509Certificate myCertificate() throws Exception {
+        return identity.myCertificate();
+    }
 
-    /**
-     * Sucht das Zertifikat für einen anderen Kommunikationsteilnehmer, das zu dem gegebenen Selektor passt.
-     * Das Zertifikat wird verwendet, um die digitalen Signaturen von Nachrichten zu überprüfen.
-     */
-    protected abstract Optional<X509Certificate> certificate(X509CertSelector selector) throws Exception;
+    private X509Certificate certificate(final X509CertSelector selector) throws Exception {
+        for (final KksDirectory dir : directories) {
+            final Optional<X509Certificate> cert = dir.certificate(selector);
+            if (cert.isPresent()) {
+                return cert.get();
+            }
+        }
+        throw new KksCertificateNotFoundException(selector.toString());
+    }
+
+    private X509Certificate certificate(final String identifier) throws Exception {
+        for (final KksDirectory dir : directories) {
+            final Optional<X509Certificate> cert = dir.certificate(identifier);
+            if (cert.isPresent()) {
+                return cert.get();
+            }
+        }
+        throw new KksCertificateNotFoundException(identifier);
+    }
 
     private OutputStream sign(final OutputStream out) throws Exception {
         final X509Certificate cert = myCertificate();
@@ -131,8 +152,7 @@ public abstract class KksSubscriber {
             private void verify() throws Exception {
                 for (final SignerInformation info : parser.getSignerInfos()) {
                     final X509CertSelector selector = selector(info.getSID());
-                    final X509Certificate cert = certificate(selector)
-                            .orElseThrow(() -> new KksCertificateNotFoundException(selector.toString()));
+                    final X509Certificate cert = certificate(selector);
                     final SignerInformationVerifier verifier = new JcaSimpleSignerInfoVerifierBuilder()
                             .setProvider(PROVIDER_NAME)
                             .build(cert);
@@ -216,10 +236,7 @@ public abstract class KksSubscriber {
 
     private final XFunction<InputStream, InputStream> decryptAndVerify = verify.compose(decrypt);
 
-    protected final Socket<OutputStream> signAndEncryptTo(
-            Socket<OutputStream> output,
-            Callable<X509Certificate>[] recipients
-    ) {
+    private Socket<OutputStream> signAndEncryptTo(Socket<OutputStream> output, Callable<X509Certificate>[] recipients) {
         return output.map(sign.compose(encrypt(recipients)));
     }
 
@@ -258,11 +275,18 @@ public abstract class KksSubscriber {
      * es andernfalls zu Datenverlust kommt!
      * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
      */
-    public abstract KksCallable<OutputStream> signAndEncryptTo(
-            Callable<OutputStream> output,
-            String recipientId,
-            String... otherIds
-    );
+    public KksCallable<OutputStream> signAndEncryptTo(
+            final Callable<OutputStream> output,
+            final String recipientId,
+            final String... otherIds) {
+        @SuppressWarnings("unchecked") final Callable<X509Certificate>[] recipients = new Callable[otherIds.length + 1];
+        recipients[0] = () -> certificate(recipientId);
+        for (int i = 0; i < otherIds.length; ) {
+            final String other = otherIds[i];
+            recipients[++i] = () -> certificate(other);
+        }
+        return callable(signAndEncryptTo(socket(output), recipients));
+    }
 
     private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input) {
         return input.map(decryptAndVerify);

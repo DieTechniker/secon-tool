@@ -19,17 +19,21 @@ package de.tk.security.kks;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.Store;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.security.KeyStore;
+import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.Callable;
 
 import static de.tk.security.kks.KKS.*;
 import static global.namespace.fun.io.bios.BIOS.memory;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
@@ -47,10 +51,23 @@ public class KksTest {
         assertKks("bob", "alice");
     }
 
+/*
+    @Tag("ldap")
+    @Test
+    void searchId() throws Exception {
+        final KksDirectory dir = directory(ldapConnectionPool("ldap://localhost"));
+        final X509CertSelector sel = new X509CertSelector();
+        sel.setSerialNumber(new BigInteger("325D8", 16));
+        sel.setIssuer("o=ITSG TrustCenter fuer sonstige Leistungserbringer,c=de");
+        assertNotNull(dir.certificate(sel));
+    }
+*/
+
     private static void assertKks(final String sender, final String recipient) throws Exception {
         final Callable<char[]> pw = "secret"::toCharArray;
         final KeyStore ks = keyStore(() -> KksTest.class.getResourceAsStream("keystore.p12"), pw);
-        assertKks(subscriber(ks, sender, pw), subscriber(ks, recipient, pw));
+        final KksDirectory dir = directory(ks);
+        assertKks(subscriber(identity(ks, sender, pw), dir), subscriber(identity(ks, recipient, pw), dir));
     }
 
     private static void assertKks(final KksSubscriber sender, final KksSubscriber recipient) throws Exception {

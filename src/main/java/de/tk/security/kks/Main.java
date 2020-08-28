@@ -80,16 +80,20 @@ public final class Main {
     }
 
     private void run() throws KksException {
-        final KeyStore ks = keyStore(() -> new FileInputStream(param("keystore")), param("storepass")::toCharArray);
-        final Callable<DirContext> cp = ldapConnectionPool(optParam("ldap").orElse("ldap://localhost"));
-        final KksSubscriber subscriber = subscriber(ks, param("alias"), param("keypass")::toCharArray, cp);
+        final KeyStore ks = keyStore(
+                () -> new FileInputStream(param("keystore")),
+                param("storepass")::toCharArray
+        );
+        final KksIdentity id = identity(ks, param("alias"), param("keypass")::toCharArray);
+        final Callable<DirContext> pool = ldapConnectionPool(optParam("ldap").orElse("ldap://localhost"));
+        final KksSubscriber sub = subscriber(id, directory(pool));
         final Callable<InputStream> source = () -> new FileInputStream(param("source"));
         final Callable<OutputStream> sink = () -> new FileOutputStream(param("sink"));
         final Optional<String> recipientId = optParam("recipient");
         if (recipientId.isPresent()) {
-            copy(source, subscriber.signAndEncryptTo(sink, recipientId.get()));
+            copy(source, sub.signAndEncryptTo(sink, recipientId.get()));
         } else {
-            copy(subscriber.decryptAndVerifyFrom(source), sink);
+            copy(sub.decryptAndVerifyFrom(source), sink);
         }
     }
 
