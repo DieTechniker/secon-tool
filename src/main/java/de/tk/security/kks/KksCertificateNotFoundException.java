@@ -26,9 +26,6 @@ public class KksCertificateNotFoundException extends KksException {
 
     private static final long serialVersionUID = 0L;
 
-    KksCertificateNotFoundException() {
-    }
-
     KksCertificateNotFoundException(String message) {
         super(message);
     }
