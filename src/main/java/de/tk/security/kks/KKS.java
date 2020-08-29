@@ -197,14 +197,14 @@ public final class KKS {
      */
     public static KksDirectory directory(final URI url) {
         if (url.getScheme().equalsIgnoreCase("ldap")) {
-            final Hashtable<String, String> e = newLdapEnvironment(url);
+            final Hashtable<String, String> e = ldapEnvironment(url);
             return directory(() -> new InitialDirContext(e));
         } else {
             throw new UnsupportedOperationException(url.getScheme());
         }
     }
 
-    private static Hashtable<String, String> newLdapEnvironment(final URI url) {
+    private static Hashtable<String, String> ldapEnvironment(final URI url) {
         final Hashtable<String, String> env = new Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, url.toString());

@@ -70,5 +70,13 @@ tasks.compileTestJava {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("LDAP")
+    }
+}
+
+tasks.register<Test>("testLdap") {
+    useJUnitPlatform {
+        includeTags("LDAP")
+    }
 }
