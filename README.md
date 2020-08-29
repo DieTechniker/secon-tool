@@ -26,17 +26,11 @@ cd kks-encryption
 
 Zum Signieren und Verschlüsseln einer Datei:
 
-```
-        (*nix) build/scripts/kks -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]
-	(Windows) build\scripts\kks.bat -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]
-```
+    java -jar build/libs/kks-*-all.jar -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]
 
 Zum Entschlüsseln und Verifizieren der Signatur einer Datei:
 
-```
-	(*nix) build/scripts/kks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]
-	(Windows) build\scripts\kks.bat -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]
-```
+    java -jar build/libs/kks-*-all.jar -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]
 
 ## API
 
