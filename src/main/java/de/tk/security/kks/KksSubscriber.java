@@ -250,7 +250,7 @@ public final class KksSubscriber {
      * es andernfalls zu Datenverlust kommt!
      * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
      */
-    public final KksCallable<OutputStream> signAndEncryptTo(
+    public KksCallable<OutputStream> signAndEncryptTo(
             final Callable<OutputStream> output,
             final X509Certificate recipient,
             final X509Certificate... others
@@ -303,7 +303,7 @@ public final class KksSubscriber {
      * andernfalls die digitalen Signaturen nicht überprüft werden!
      * Es wird daher empfohlen, die erneuerbaren Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
      */
-    public final KksCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
+    public KksCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
         return callable(decryptAndVerifyFrom(socket(input)));
     }
 }
