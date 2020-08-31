@@ -252,12 +252,23 @@ public final class KKS {
         return () -> {
             try {
                 return c.call();
-            } catch (KksException | RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new KksException(e);
+            } catch (final Exception e) {
+                rethrow(e);
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new KksException(e);
+                }
             }
         };
+    }
+
+    private static void rethrow(Throwable t) throws KksException {
+        for (; null != t; t = t.getCause()) {
+            if (t instanceof KksException) {
+                throw (KksException) t;
+            }
+        }
     }
 
     @SuppressWarnings("deprecation")

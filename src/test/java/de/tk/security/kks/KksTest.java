@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import static de.tk.security.kks.KKS.*;
@@ -68,15 +67,13 @@ public class KksTest {
 
         // Simulate certificate verification failure:
         {
-            final String token = UUID.randomUUID().toString();
-            final KksException e = assertThrows(KksException.class, () -> copy(
+            final KksException e = new KksException();
+            assertSame(e, assertThrows(KksException.class, () -> copy(
                     recipientSub.decryptAndVerifyFrom(input(cipher), cert -> {
-                        throw new Exception(token);
+                        throw e;
                     }),
                     output(clone)
-            ));
-            // Assert `e` matches `new KksException(new IOException(new Exception(token)))`:
-            assertEquals(token, e.getCause().getCause().getMessage());
+            )));
         }
 
         copy(recipientSub.decryptAndVerifyFrom(input(cipher)), output(clone));
