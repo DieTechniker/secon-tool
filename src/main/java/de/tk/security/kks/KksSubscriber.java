@@ -43,6 +43,7 @@ import java.util.concurrent.Callable;
 
 import static de.tk.security.kks.KKS.callable;
 import static de.tk.security.kks.KKS.socket;
+import static java.util.Objects.requireNonNull;
 import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
 /**
@@ -52,31 +53,52 @@ import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author Christian Schlichtherle
  */
-public abstract class KksSubscriber {
+public final class KksSubscriber {
 
-    /**
-     * Gibt den privaten Schlüssel für diesen Kommunikationsteilnehmer zurück.
-     * Der private Schlüssel wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um
-     * verschlüsselte Nachrichten zu entschlüsseln.
-     */
-    protected abstract PrivateKey myPrivateKey() throws Exception;
+    private volatile PrivateKey privateKey;
+    private volatile X509Certificate certificate;
 
-    /**
-     * Gibt das Zertifikat für diesen Kommunikationsteilnehmer zurück.
-     * Das Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um verschlüsselte
-     * Nachrichten zu entschlüsseln.
-     */
-    public abstract X509Certificate myCertificate() throws Exception;
+    private final KksIdentity identity;
+    private final KksDirectory[] directories;
 
-    /**
-     * Sucht das Zertifikat für einen anderen Kommunikationsteilnehmer, das zu dem gegebenen Selektor passt.
-     * Das Zertifikat wird verwendet, um die digitalen Signaturen von Nachrichten zu überprüfen.
-     */
-    protected abstract Optional<X509Certificate> certificate(X509CertSelector selector) throws Exception;
+    KksSubscriber(final KksIdentity identity, final KksDirectory[] directories) {
+        this.identity = identity;
+        this.directories = directories;
+    }
+
+    private PrivateKey privateKey() throws Exception {
+        final PrivateKey k = this.privateKey;
+        return null != k ? k : (this.privateKey = identity.privateKey());
+    }
+
+    private X509Certificate certificate() throws Exception {
+        final X509Certificate c = this.certificate;
+        return null != c ? c : (this.certificate = identity.certificate());
+    }
+
+    private X509Certificate certificate(final X509CertSelector selector) throws Exception {
+        for (final KksDirectory dir : directories) {
+            final Optional<X509Certificate> cert = dir.certificate(selector);
+            if (cert.isPresent()) {
+                return cert.get();
+            }
+        }
+        throw new KksCertificateNotFoundException(selector.toString());
+    }
+
+    private X509Certificate certificate(final String identifier) throws Exception {
+        for (final KksDirectory dir : directories) {
+            final Optional<X509Certificate> cert = dir.certificate(identifier);
+            if (cert.isPresent()) {
+                return cert.get();
+            }
+        }
+        throw new KksCertificateNotFoundException(identifier);
+    }
 
     private OutputStream sign(final OutputStream out) throws Exception {
-        final X509Certificate cert = myCertificate();
-        final PrivateKey key = myPrivateKey();
+        final X509Certificate cert = certificate();
+        final PrivateKey key = privateKey();
         final ASN1ObjectIdentifier sigAlgOID = new ASN1ObjectIdentifier(cert.getSigAlgOID());
         final ContentSigner signer;
         if (PKCSObjectIdentifiers.id_RSASSA_PSS.equals(sigAlgOID)) {
@@ -131,8 +153,7 @@ public abstract class KksSubscriber {
             private void verify() throws Exception {
                 for (final SignerInformation info : parser.getSignerInfos()) {
                     final X509CertSelector selector = selector(info.getSID());
-                    final X509Certificate cert = certificate(selector)
-                            .orElseThrow(() -> new KksCertificateNotFoundException(selector.toString()));
+                    final X509Certificate cert = certificate(selector);
                     final SignerInformationVerifier verifier = new JcaSimpleSignerInfoVerifierBuilder()
                             .setProvider(PROVIDER_NAME)
                             .build(cert);
@@ -196,8 +217,8 @@ public abstract class KksSubscriber {
     }
 
     private InputStream decrypt(final InputStream in) throws Exception {
-        final X509Certificate cert = myCertificate();
-        final PrivateKey key = myPrivateKey();
+        final X509Certificate cert = certificate();
+        final PrivateKey key = privateKey();
         final RecipientInformation info = Optional.ofNullable(
                 new CMSEnvelopedDataParser(new BufferedInputStream(in))
                         .getRecipientInfos()
@@ -216,15 +237,12 @@ public abstract class KksSubscriber {
 
     private final XFunction<InputStream, InputStream> decryptAndVerify = verify.compose(decrypt);
 
-    protected final Socket<OutputStream> signAndEncryptTo(
-            Socket<OutputStream> output,
-            Callable<X509Certificate>[] recipients
-    ) {
+    private Socket<OutputStream> signAndEncryptTo(Socket<OutputStream> output, Callable<X509Certificate>[] recipients) {
         return output.map(sign.compose(encrypt(recipients)));
     }
 
     /**
-     * Gibt einen erneuerbaren Ausgabestrom zurück, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
+     * Erzeugt einen erneuerbaren Ausgabestrom, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
      * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
      * Die Empfänger werden durch die gegebenen Zertifikate identifiziert.
      * <p>
@@ -238,36 +256,47 @@ public abstract class KksSubscriber {
             final X509Certificate... others
     ) {
         @SuppressWarnings("unchecked") final Callable<X509Certificate>[] recipients = new Callable[others.length + 1];
+        requireNonNull(recipient);
         recipients[0] = () -> recipient;
         for (int i = 0; i < others.length; ) {
-            final X509Certificate other = others[i];
+            final X509Certificate other = requireNonNull(others[i]);
             recipients[++i] = () -> other;
         }
         return callable(signAndEncryptTo(socket(output), recipients));
     }
 
     /**
-     * Gibt einen erneuerbaren Ausgabestrom zurück, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
+     * Erzeugt einen erneuerbaren Ausgabestrom, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
      * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
      * Die Empfänger werden durch die gegebenen Institutionskennzeichen identifiziert.
+     * Diese fangen typischerweise mit "IK" oder "BN" an, gefolgt von einer neunstelligen Zahl gemäß
+     * <a href="https://www.gkv-datenaustausch.de/media/dokumente/faq/Gemeinsames_Rundschreiben_IK_2015-03.pdf">Rundschreiben ARGE-IK</a>.
      * Die entsprechenden Zertifikate werden vom LDAP-Server geladen.
      * <p>
      * Der Aufrufer ist verpflichtet, die erzeugten Ausgabeströme zu {@linkplain OutputStream#close() schließen}, da
      * es andernfalls zu Datenverlust kommt!
      * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
      */
-    public abstract KksCallable<OutputStream> signAndEncryptTo(
-            Callable<OutputStream> output,
-            int recipientId,
-            int... otherIds
-    );
+    public KksCallable<OutputStream> signAndEncryptTo(
+            final Callable<OutputStream> output,
+            final String recipientId,
+            final String... otherIds) {
+        @SuppressWarnings("unchecked") final Callable<X509Certificate>[] recipients = new Callable[otherIds.length + 1];
+        requireNonNull(recipientId);
+        recipients[0] = () -> certificate(recipientId);
+        for (int i = 0; i < otherIds.length; ) {
+            final String other = requireNonNull(otherIds[i]);
+            recipients[++i] = () -> certificate(other);
+        }
+        return callable(signAndEncryptTo(socket(output), recipients));
+    }
 
     private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input) {
         return input.map(decryptAndVerify);
     }
 
     /**
-     * Gibt einen erneuerbaren Eingabestrom zurück, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
+     * Erzeugt einen erneuerbaren Eingabestrom, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
      * gelesen werden, entschlüsselt und die digitalen Signaturen überprüft.
      * <p>
      * Der Aufrufer ist verpflichtet, die erzeugten Eingabeströme zu {@linkplain InputStream#close() schließen}, da

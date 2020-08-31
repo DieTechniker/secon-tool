@@ -16,11 +16,11 @@
  */
 package de.tk.security.kks;
 
-import javax.naming.directory.DirContext;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -49,13 +49,13 @@ public final class Main {
                             "\n" +
                             "\tTo sign and encrypt:\n" +
                             "\n" +
-                            "\t\tkks -recipient <IK> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password> [-ldap <URL>]\n" +
+                            "\t\tkks -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]\n" +
                             "\n" +
                             "OR\n" +
                             "\n" +
                             "\tTo decrypt and verify:\n" +
                             "\n" +
-                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> -alias <name> -keypass <password> [-ldap <URL>]\n"
+                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]\n"
             );
             System.exit(1);
         }
@@ -80,16 +80,24 @@ public final class Main {
     }
 
     private void run() throws KksException {
-        final KeyStore ks = keyStore(() -> new FileInputStream(param("keystore")), param("storepass")::toCharArray);
-        final Callable<DirContext> cp = ldapConnectionPool(optParam("ldap").orElse("ldap://localhost"));
-        final KksSubscriber subscriber = subscriber(ks, param("alias"), param("keypass")::toCharArray, cp);
+        final KeyStore ks = keyStore(
+                () -> new FileInputStream(param("keystore")),
+                param("storepass")::toCharArray,
+                optParam("storetype").orElse("PKCS12")
+        );
+        final KksIdentity identity = identity(ks, param("alias"), param("keypass")::toCharArray);
+        final KksDirectory directory = directory(ks);
+        final KksSubscriber sub = optParam("ldap")
+                .map(url -> directory(URI.create(url)))
+                .map(dir -> subscriber(identity, directory, dir))
+                .orElseGet(() -> subscriber(identity, directory));
         final Callable<InputStream> source = () -> new FileInputStream(param("source"));
         final Callable<OutputStream> sink = () -> new FileOutputStream(param("sink"));
-        final Optional<Integer> recipientId = optParam("recipient").map(Integer::parseInt);
+        final Optional<String> recipientId = optParam("recipient");
         if (recipientId.isPresent()) {
-            copy(source, subscriber.signAndEncryptTo(sink, recipientId.get()));
+            copy(source, sub.signAndEncryptTo(sink, recipientId.get()));
         } else {
-            copy(subscriber.decryptAndVerifyFrom(source), sink);
+            copy(sub.decryptAndVerifyFrom(source), sink);
         }
     }
 

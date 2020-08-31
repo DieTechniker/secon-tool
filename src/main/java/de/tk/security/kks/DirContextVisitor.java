@@ -30,10 +30,11 @@ interface DirContextVisitor {
     DirContext context();
 
     @SuppressWarnings("unchecked")
-    default <T> List<T> search(final String base, final String filter, final String... attrs) throws Exception {
+    default <T> List<T> search(final String base, final String filter, final int scope, final String... attrs) throws Exception {
+        final SearchControls cons = searchControls(scope, attrs);
         final List<T> result = new LinkedList<>();
         NamingCollection
-                .from(() -> context().search(base, filter, newSearchControls(attrs)))
+                .from(() -> context().search(base, filter, cons))
                 .forEach(searchResult -> NamingCollection
                         .from(searchResult.getAttributes()::getAll)
                         .forEach(attr -> NamingCollection
@@ -42,9 +43,9 @@ interface DirContextVisitor {
         return result;
     }
 
-    default SearchControls newSearchControls(final String... attrs) {
+    default SearchControls searchControls(final int scope, final String... attrs) {
         final SearchControls cons = new SearchControls();
-        cons.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        cons.setSearchScope(scope);
         cons.setReturningAttributes(attrs);
         return cons;
     }

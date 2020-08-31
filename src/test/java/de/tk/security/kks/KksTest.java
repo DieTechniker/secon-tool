@@ -21,7 +21,6 @@ import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.Store;
 import org.junit.jupiter.api.Test;
 
-import javax.naming.directory.DirContext;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
@@ -39,27 +38,33 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 public class KksTest {
 
     @Test
-    public void aliceToBob() throws Exception {
+    void aliceToBob() throws Exception {
         assertKks("alice", "bob");
     }
 
     @Test
-    public void bobToAlice() throws Exception {
+    void bobToAlice() throws Exception {
         assertKks("bob", "alice");
     }
 
     private static void assertKks(final String sender, final String recipient) throws Exception {
         final Callable<char[]> pw = "secret"::toCharArray;
         final KeyStore ks = keyStore(() -> KksTest.class.getResourceAsStream("keystore.p12"), pw);
-        assertKks(subscriber(ks, sender, pw), subscriber(ks, recipient, pw));
+        assertKks(identity(ks, sender, pw), identity(ks, recipient, pw), directory(ks));
     }
 
-    private static void assertKks(final KksSubscriber sender, final KksSubscriber recipient) throws Exception {
-        final X509Certificate recipientCert = recipient.myCertificate();
+    private static void assertKks(
+            final KksIdentity senderId,
+            final KksIdentity recipientId,
+            final KksDirectory directory
+    ) throws Exception {
+        final KksSubscriber senderSub = subscriber(senderId, directory);
+        final KksSubscriber recipientSub = subscriber(recipientId, directory);
+        final X509Certificate recipientCert = recipientId.certificate();
         final Store plain = memory(), cipher = memory(), clone = memory();
         plain.content("Hello world!".getBytes());
-        copy(input(plain), sender.signAndEncryptTo(output(cipher), recipientCert));
-        copy(recipient.decryptAndVerifyFrom(input(cipher)), output(clone));
+        copy(input(plain), senderSub.signAndEncryptTo(output(cipher), recipientCert));
+        copy(recipientSub.decryptAndVerifyFrom(input(cipher)), output(clone));
         assertArrayEquals(plain.content(), clone.content());
     }
 
