@@ -215,7 +215,6 @@ public final class KKS {
     /**
      * Erzeugt einen Kommunikationsteilnehmer unter Verwendung der gegebenen Identität und der geordneten Liste von
      * Verzeichnisdiensten für Zertifikate im KKS.
-     * Beachten Sie, dass der Kommunikationsteilnehmer KEINERLEI ZERTIFIKATE ÜBERPRÜFT, nur die digitalen Signaturen!
      */
     public static KksSubscriber subscriber(
             final KksIdentity identity,

@@ -25,11 +25,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import static de.tk.security.kks.KKS.*;
 import static global.namespace.fun.io.bios.BIOS.memory;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
@@ -64,6 +65,20 @@ public class KksTest {
         final Store plain = memory(), cipher = memory(), clone = memory();
         plain.content("Hello world!".getBytes());
         copy(input(plain), senderSub.signAndEncryptTo(output(cipher), recipientCert));
+
+        // Simulate certificate verification failure:
+        {
+            final String token = UUID.randomUUID().toString();
+            final KksException e = assertThrows(KksException.class, () -> copy(
+                    recipientSub.decryptAndVerifyFrom(input(cipher), cert -> {
+                        throw new Exception(token);
+                    }),
+                    output(clone)
+            ));
+            // Assert `e` matches `new KksException(new IOException(new Exception(token)))`:
+            assertEquals(token, e.getCause().getCause().getMessage());
+        }
+
         copy(recipientSub.decryptAndVerifyFrom(input(cipher)), output(clone));
         assertArrayEquals(plain.content(), clone.content());
     }

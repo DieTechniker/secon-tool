@@ -76,6 +76,26 @@ public final class KksSubscriber {
         return null != c ? c : (this.certificate = identity.certificate());
     }
 
+    private static X500Principal principal(final X500Name name) {
+        try {
+            return new X500Principal(name.getEncoded());
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    private static X509CertSelector selector(final SignerId id) {
+        final X509CertSelector sel = new X509CertSelector();
+        Optional.ofNullable(id.getIssuer()).ifPresent(issuer -> sel.setIssuer(principal(issuer)));
+        sel.setSerialNumber(id.getSerialNumber());
+        sel.setSubjectKeyIdentifier(id.getSubjectKeyIdentifier());
+        return sel;
+    }
+
+    private X509Certificate certificate(SignerId id) throws Exception {
+        return certificate(selector(id));
+    }
+
     private X509Certificate certificate(final X509CertSelector selector) throws Exception {
         for (final KksDirectory dir : directories) {
             final Optional<X509Certificate> cert = dir.certificate(selector);
@@ -127,7 +147,7 @@ public final class KksSubscriber {
 
     private final XFunction<OutputStream, OutputStream> sign = Streams.fixOutputstreamClose(this::sign);
 
-    private InputStream verify(final InputStream in) throws Exception {
+    private InputStream verify(final InputStream in, final KksVerifier verifier) throws Exception {
         final CMSSignedDataParser parser = new CMSSignedDataParser(
                 new JcaDigestCalculatorProviderBuilder().setProvider(PROVIDER_NAME).build(),
                 new BufferedInputStream(in)
@@ -152,37 +172,22 @@ public final class KksSubscriber {
 
             private void verify() throws Exception {
                 for (final SignerInformation info : parser.getSignerInfos()) {
-                    final X509CertSelector selector = selector(info.getSID());
-                    final X509Certificate cert = certificate(selector);
-                    final SignerInformationVerifier verifier = new JcaSimpleSignerInfoVerifierBuilder()
+                    final X509Certificate cert = certificate(info.getSID());
+                    final SignerInformationVerifier ver = new JcaSimpleSignerInfoVerifierBuilder()
                             .setProvider(PROVIDER_NAME)
                             .build(cert);
-                    if (!info.verify(verifier)) {
+                    if (!info.verify(ver)) {
                         throw new KksInvalidSignatureException();
                     }
-                }
-            }
-
-            private X509CertSelector selector(final SignerId signerId) {
-                final X509CertSelector selector = new X509CertSelector();
-                Optional.ofNullable(signerId.getIssuer())
-                        .ifPresent(issuer -> selector.setIssuer(principal(issuer)));
-                selector.setSerialNumber(signerId.getSerialNumber());
-                selector.setSubjectKeyIdentifier(signerId.getSubjectKeyIdentifier());
-                return selector;
-            }
-
-            private X500Principal principal(final X500Name name) {
-                try {
-                    return new X500Principal(name.getEncoded());
-                } catch (IOException e) {
-                    throw new AssertionError(e);
+                    verifier.verify(cert);
                 }
             }
         };
     }
 
-    private final XFunction<InputStream, InputStream> verify = Streams.fixInputstreamClose(this::verify);
+    private XFunction<InputStream, InputStream> verify(KksVerifier v) {
+        return Streams.fixInputstreamClose(in -> verify(in, v));
+    }
 
     private static int keySize(final X509Certificate cert) {
         final RSAKey rsaPk = (RSAKey) cert.getPublicKey();
@@ -234,8 +239,6 @@ public final class KksSubscriber {
     }
 
     private final XFunction<InputStream, InputStream> decrypt = Streams.fixInputstreamClose(this::decrypt);
-
-    private final XFunction<InputStream, InputStream> decryptAndVerify = verify.compose(decrypt);
 
     private Socket<OutputStream> signAndEncryptTo(Socket<OutputStream> output, Callable<X509Certificate>[] recipients) {
         return output.map(sign.compose(encrypt(recipients)));
@@ -291,19 +294,34 @@ public final class KksSubscriber {
         return callable(signAndEncryptTo(socket(output), recipients));
     }
 
-    private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input) {
-        return input.map(decryptAndVerify);
+    private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input, KksVerifier v) {
+        return input.map(verify(v).compose(decrypt));
     }
 
     /**
      * Erzeugt einen erneuerbaren Eingabestrom, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
      * gelesen werden, entschlüsselt und die digitalen Signaturen überprüft.
+     * Bei dieser Variante der Methode werden die Zertifikate der Absender <em>nicht überprüft</em>!
      * <p>
      * Der Aufrufer ist verpflichtet, die erzeugten Eingabeströme zu {@linkplain InputStream#close() schließen}, da
      * andernfalls die digitalen Signaturen nicht überprüft werden!
      * Es wird daher empfohlen, die erneuerbaren Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
      */
     public KksCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
-        return callable(decryptAndVerifyFrom(socket(input)));
+        return callable(decryptAndVerifyFrom(socket(input), KksVerifier.NULL));
+    }
+
+    /**
+     * Erzeugt einen erneuerbaren Eingabestrom, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
+     * gelesen werden, entschlüsselt und die digitalen Signaturen überprüft.
+     * Bei dieser Variante der Methode werden die Zertifikate der Absender zusätzlich durch den gegebenen Verifizierer
+     * überprüft.
+     * <p>
+     * Der Aufrufer ist verpflichtet, die erzeugten Eingabeströme zu {@linkplain InputStream#close() schließen}, da
+     * andernfalls die digitalen Signaturen nicht überprüft werden!
+     * Es wird daher empfohlen, die erneuerbaren Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
+     */
+    public KksCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input, KksVerifier v) {
+        return callable(decryptAndVerifyFrom(socket(input), v));
     }
 }
