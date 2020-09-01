@@ -60,10 +60,6 @@ tasks.jar {
     }
 }
 
-tasks.shadowJar {
-    minimize()
-}
-
 tasks.compileTestJava {
     options.encoding = encoding
     options.release.set(8)
