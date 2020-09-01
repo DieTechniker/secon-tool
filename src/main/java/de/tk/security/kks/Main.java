@@ -88,7 +88,7 @@ public final class Main {
         final KksIdentity identity = identity(
                 keyStore,
                 param("alias"),
-                optParam("keypass").orElseGet(optParam("storePass")::get)::toCharArray
+                optParam("keypass").orElseGet(optParam("storepass")::get)::toCharArray
         );
         final KksDirectory keyStoreDir = directory(keyStore);
         final KksSubscriber subscriber = optParam("ldap")
