@@ -17,7 +17,6 @@
 package de.tk.security.kks;
 
 import global.namespace.fun.io.api.Socket;
-import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.bios.BIOS;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -119,8 +118,8 @@ public final class KKS {
      * Verwendung des gegebenen Passworts.
      * Der Inhalt des Eingabestroms muß dem PKCS12-Format entsprechen.
      */
-    public static KeyStore keyStore(Callable<InputStream> source, Callable<char[]> password) throws KksException {
-        return keyStore(source, password, "PKCS12");
+    public static KeyStore keyStore(Callable<InputStream> input, Callable<char[]> password) throws KksException {
+        return keyStore(input, password, "PKCS12");
     }
 
     /**
@@ -129,22 +128,22 @@ public final class KKS {
      * Der Inhalt des Eingabestroms muß dem gegebenen Typ des Schlüsselbunds entsprechen.
      */
     public static KeyStore keyStore(
-            Callable<InputStream> source,
+            Callable<InputStream> input,
             Callable<char[]> password,
             String type
     ) throws KksException {
-        return call(() -> keyStore(() -> socket(source), password, type));
+        return call(() -> keyStore(socket(input), password, type));
     }
 
     private static KeyStore keyStore(
-            final Source source,
+            final Socket<InputStream> input,
             final Callable<char[]> password,
             final String type
     ) throws Exception {
         final KeyStore ks = KeyStore.getInstance(type);
         final char[] pwChars = password.call();
         try {
-            source.acceptReader(in -> ks.load(in, pwChars));
+            input.accept(in -> ks.load(in, pwChars));
         } finally {
             Arrays.fill(pwChars, (char) 0);
         }

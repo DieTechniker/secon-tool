@@ -17,16 +17,10 @@
 package de.tk.security.kks;
 
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.PrivateKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -57,7 +51,7 @@ final class KeyStoreIdentity implements KksIdentity {
     }
 
     @Override
-    public X509Certificate certificate() throws Exception{
+    public X509Certificate certificate() throws Exception {
         return requireNonNull((X509Certificate) ks.getCertificate(alias));
     }
 }

@@ -49,13 +49,13 @@ public final class Main {
                             "\n" +
                             "\tTo sign and encrypt:\n" +
                             "\n" +
-                            "\t\tkks -recipient <IK or BN> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]\n" +
+                            "\t\tkks -recipient <identifier> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> [-keypass <password>] [-ldap <url>]\n" +
                             "\n" +
                             "OR\n" +
                             "\n" +
                             "\tTo decrypt and verify:\n" +
                             "\n" +
-                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]\n"
+                            "\t\tkks -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> [-keypass <password>] [-ldap <url>]\n"
             );
             System.exit(1);
         }
@@ -80,24 +80,28 @@ public final class Main {
     }
 
     private void run() throws KksException {
-        final KeyStore ks = keyStore(
+        final KeyStore keyStore = keyStore(
                 () -> new FileInputStream(param("keystore")),
                 param("storepass")::toCharArray,
                 optParam("storetype").orElse("PKCS12")
         );
-        final KksIdentity identity = identity(ks, param("alias"), param("keypass")::toCharArray);
-        final KksDirectory directory = directory(ks);
-        final KksSubscriber sub = optParam("ldap")
+        final KksIdentity identity = identity(
+                keyStore,
+                param("alias"),
+                optParam("keypass").orElseGet(optParam("storepass")::get)::toCharArray
+        );
+        final KksDirectory keyStoreDir = directory(keyStore);
+        final KksSubscriber subscriber = optParam("ldap")
                 .map(url -> directory(URI.create(url)))
-                .map(dir -> subscriber(identity, directory, dir))
-                .orElseGet(() -> subscriber(identity, directory));
+                .map(ldapDir -> subscriber(identity, keyStoreDir, ldapDir))
+                .orElseGet(() -> subscriber(identity, keyStoreDir));
         final Callable<InputStream> source = () -> new FileInputStream(param("source"));
         final Callable<OutputStream> sink = () -> new FileOutputStream(param("sink"));
-        final Optional<String> recipientId = optParam("recipient");
-        if (recipientId.isPresent()) {
-            copy(source, sub.signAndEncryptTo(sink, recipientId.get()));
+        final Optional<String> recipient = optParam("recipient");
+        if (recipient.isPresent()) {
+            copy(source, subscriber.signAndEncryptTo(sink, recipient.get()));
         } else {
-            copy(sub.decryptAndVerifyFrom(source), sink);
+            copy(subscriber.decryptAndVerifyFrom(source), sink);
         }
     }
 
@@ -109,7 +113,6 @@ public final class Main {
         throw new IllegalArgumentException("-" + name + " parameter is undefined!");
     }
 
-    @SuppressWarnings("SameParameterValue")
     private Optional<String> optParam(String name) {
         return Optional.ofNullable(options.get(name));
     }
