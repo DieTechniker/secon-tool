@@ -52,7 +52,10 @@ final class LdapDirectory implements KksDirectory {
         final List<X509Certificate> result = new ArrayList<>();
         pool.accept(visitor -> {
             for (byte[] bytes : visitor.<byte[]>search(base, "objectClass=pkiUser", OBJECT_SCOPE, "userCertificate;binary")) {
-                result.add(certificate(bytes));
+                final X509Certificate cert = certificate(bytes);
+                if (selector.match(cert)) {
+                    result.add(cert);
+                }
             }
         });
         return result.stream().max(CERTIFICATE_COMPARATOR);
