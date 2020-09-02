@@ -35,6 +35,7 @@ plugins {
     application
     `java-library`
     id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("biz.aQute.bnd.builder") version "5.1.2"
 }
 
 repositories {
