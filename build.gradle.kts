@@ -17,6 +17,7 @@
 group = "de.tk.security"
 version = "0.0.1-SNAPSHOT"
 
+
 application {
     mainClassName = "de.tk.security.kks.Main"
 }
@@ -31,10 +32,11 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
-plugins {
+plugins {	
     application
     `java-library`
     id("com.github.johnrengelman.shadow") version "6.0.0"
+	id("biz.aQute.bnd.builder") version "5.1.2"
 }
 
 repositories {
