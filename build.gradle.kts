@@ -34,11 +34,17 @@ dependencies {
 plugins {
     application
     `java-library`
+    `maven-publish`
     id("com.github.johnrengelman.shadow") version "6.0.0"
 }
 
 repositories {
     mavenCentral()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 val encoding = "UTF-8"
@@ -74,5 +80,66 @@ tasks.test {
 tasks.register<Test>("testLdap") {
     useJUnitPlatform {
         includeTags("LDAP")
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            pom {
+                name.set("kks-encryption")
+                description.set("A library for secure communication in german health care and social affairs sector. Based on specifications in 'GKV Anlage 16 SECON'")
+                url.set("https://github.com/DieTechniker/kks-encryption")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("loetifuss")
+                        name.set("Wolfgang Schmiesing")
+                        email.set("wolfgang.schmiesing@googlemail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://example.com/my-library.git")
+                    developerConnection.set("scm:git:ssh://example.com/my-library.git")
+                    url.set("https://github.com/DieTechniker/kks-encryption")
+                }
+            }
+        }
+    }
+	
+	repositories {
+        maven {
+            val releasesRepoUrl = "$buildDir/repos/releases"
+            val snapshotsRepoUrl = "$buildDir/repos/snapshots"
+            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+        }
+    }
+	
+    repositories {
+        maven {		
+            // MavenCentral
+			name = "OSSRH"
+            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")				
+            }			
+        }
+        maven {
+            // GitHubPackages
+			name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/DieTechniker/kks-encryption")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }			
+        }		
     }
 }
