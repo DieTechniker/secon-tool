@@ -34,4 +34,4 @@ Zum Entschlüsseln und Verifizieren der Signatur einer Datei:
 
 ## API
 
-Siehe Javadoc der `KKS`-Klasse.
+Siehe [Sourcecode](src/main/java/de/tk/security/kks/KKS.java) und Javadoc der `KKS`-Klasse.
