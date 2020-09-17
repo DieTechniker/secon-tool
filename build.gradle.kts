@@ -115,8 +115,8 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://example.com/my-library.git")
-                    developerConnection.set("scm:git:ssh://example.com/my-library.git")
+                    connection.set("scm:git:git://github.com/DieTechniker/kks-encryption.git")
+                    developerConnection.set("scm:git:ssh://github.com/DieTechniker/kks-encryption.git")
                     url.set("https://github.com/DieTechniker/kks-encryption")
                 }
             }
