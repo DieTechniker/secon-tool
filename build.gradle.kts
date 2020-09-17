@@ -103,8 +103,8 @@ publishing {
                 url.set("https://github.com/DieTechniker/kks-encryption")
                 licenses {
                     license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        name.set("GNU Lesser General Public License, Version 3")
+                        url.set("https://www.gnu.org/licenses/lgpl-3.0.txt")
                     }
                 }
                 developers {
