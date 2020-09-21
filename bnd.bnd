@@ -1,0 +1,4 @@
+-exportcontents: *;-noimport:=true
+-nouses: true
+-noimport: true
+-removeheaders: "Bnd-LastModified"
