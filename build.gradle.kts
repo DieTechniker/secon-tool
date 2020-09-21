@@ -2,19 +2,23 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of kks-encryption
+ * (see https://github.com/DieTechniker/kks-encryption).
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-group = "de.tk.security"
+group = "de.tk.opensource"
 version = "0.0.1-SNAPSHOT"
 
 application {
@@ -34,12 +38,19 @@ dependencies {
 plugins {
     application
     `java-library`
+    `maven-publish`
     id("com.github.johnrengelman.shadow") version "6.0.0"
     id("biz.aQute.bnd.builder") version "5.1.2"
+	id("net.minecrell.licenser") version "0.4.1"
 }
 
 repositories {
     mavenCentral()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 val encoding = "UTF-8"
@@ -75,5 +86,72 @@ tasks.test {
 tasks.register<Test>("testLdap") {
     useJUnitPlatform {
         includeTags("LDAP")
+    }
+}
+
+license {
+	header = project.file("LICENSE.header")
+	include("**/*.java,**/*.kts")
+	newLine = false
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            pom {
+                name.set("kks-encryption")
+                description.set("A library for secure communication in german health care and social affairs sector. Based on specifications in 'GKV Anlage 16 SECON'")
+                url.set("https://github.com/DieTechniker/kks-encryption")
+                licenses {
+                    license {
+                        name.set("GNU Lesser General Public License, Version 3")
+                        url.set("https://www.gnu.org/licenses/lgpl-3.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("loetifuss")
+                        name.set("Wolfgang Schmiesing")
+                        email.set("wolfgang.schmiesing@googlemail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/DieTechniker/kks-encryption.git")
+                    developerConnection.set("scm:git:ssh://github.com/DieTechniker/kks-encryption.git")
+                    url.set("https://github.com/DieTechniker/kks-encryption")
+                }
+            }
+        }
+    }
+	
+	repositories {
+        maven {
+            val releasesRepoUrl = "$buildDir/repos/releases"
+            val snapshotsRepoUrl = "$buildDir/repos/snapshots"
+            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+        }
+    }
+	
+    repositories {
+        maven {		
+            // MavenCentral
+			name = "OSSRH"
+            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")				
+            }			
+        }
+        maven {
+            // GitHubPackages
+			name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/DieTechniker/kks-encryption")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }			
+        }		
     }
 }
