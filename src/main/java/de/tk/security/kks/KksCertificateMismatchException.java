@@ -21,7 +21,7 @@
 package de.tk.security.kks;
 
 /**
- * Zeigt an, dass das im KKS-Kontext {@linkplain KksSubscriber#myCertificate() konfigurierte Zertifikat} zu keinem der
+ * Zeigt an, dass das im KKS-Kontext {@linkplain KksSubscriber#certificate() konfigurierte Zertifikat} zu keinem der
  * vorgesehenen Empfänger einer verschlüsselten Nachricht passt und die Nachricht daher nicht entschlüsselt werden kann.
  * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
