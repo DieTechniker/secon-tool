@@ -41,7 +41,7 @@ Zum Entschlüsseln und Verifizieren der Signatur einer Datei:
          -alias <name> [-keypass <password>] \
         [-ldap <url>]
 
-Für Inline-Hilfe rufen Sie bitte das Tool ohne Parameter auf:
+Für Hilfe zu der Bedeutung der einzelnen Parameter rufen Sie bitte das Tool ohne Parameter auf:
 
     java -jar build/libs/kks-*-all.jar
 
