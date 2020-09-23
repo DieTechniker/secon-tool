@@ -11,7 +11,7 @@ der [GKV Anlage 16 SecuritySchnittstelle SECON](https://www.gkv-datenaustausch.d
 
 [Fun I/O](https://christian-schlichtherle.github.io/fun-io/)
 
-## Getting started
+## Übersicht
 
 Aktuell gibt es noch kein offizielles Release auf Maven Central. Dies wird aber in Kürze erfolgen.
 Daher muss der Quellcode aktuell zunächst gebaut werden.
@@ -26,11 +26,24 @@ cd kks-encryption
 
 Zum Signieren und Verschlüsseln einer Datei:
 
-    java -jar build/libs/kks-*-all.jar -recipient <identifier> -source <plainfile> -sink <cipherfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> [-keypass <password>] [-ldap <url>]
+    java -jar build/libs/kks-*-all.jar \
+         -recipient <identifier> \
+         -source <plainfile> -sink <cipherfile> \
+         -keystore <storefile> -storepass <password> [-storetype <type>] \
+         -alias <name> [-keypass <password>] \
+        [-ldap <url>]
 
 Zum Entschlüsseln und Verifizieren der Signatur einer Datei:
 
-    java -jar build/libs/kks-*-all.jar -source <cipherfile> -sink <plainfile> -keystore <storefile> -storepass <password> [-storetype <type>] -alias <name> -keypass <password> [-ldap <url>]
+    java -jar build/libs/kks-*-all.jar \
+         -source <cipherfile> -sink <plainfile> \
+         -keystore <storefile> -storepass <password> [-storetype <type>] \
+         -alias <name> [-keypass <password>] \
+        [-ldap <url>]
+
+Für Hilfe zu der Bedeutung der einzelnen Parameter rufen Sie bitte das Tool ohne Parameter auf:
+
+    java -jar build/libs/kks-*-all.jar
 
 ## API
 

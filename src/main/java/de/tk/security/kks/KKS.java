@@ -190,9 +190,8 @@ public final class KKS {
      * Erzeugt einen LDAP-Verbindungspool für den gegebenen URL.
      * Die Zertifikate werden aus einem LDAP-Server unter Verwendung des gegebenen URLs geladen.
      * Alle Verbindungen werden in einem Pool verwaltet.
-     * Der LDAP-Server muss anonymen Lesezugriff erlauben.
-     * <p>
-     * Das Schema des LDAP-Servers muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
+     * Der LDAP-Server muss anonymen Lesezugriff erlauben und das Schema des Directory Information Tree muss Kapitel
+     * 4.6.2 "LDAP-Verzeichnis" der
      * <a href="https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf">Security-Schnittstelle (SECON) - Anlage 16</a>
      * entsprechen.
      *
