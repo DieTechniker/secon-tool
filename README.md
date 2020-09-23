@@ -11,7 +11,7 @@ der [GKV Anlage 16 SecuritySchnittstelle SECON](https://www.gkv-datenaustausch.d
 
 [Fun I/O](https://christian-schlichtherle.github.io/fun-io/)
 
-## Getting started
+## Übersicht
 
 Aktuell gibt es noch kein offizielles Release auf Maven Central. Dies wird aber in Kürze erfolgen.
 Daher muss der Quellcode aktuell zunächst gebaut werden.
