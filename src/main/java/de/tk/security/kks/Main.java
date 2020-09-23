@@ -48,13 +48,15 @@ public final class Main {
 "Error: " + e.getMessage() + "\n\n" +
 "Usage:\n\n" +
 "To sign and encrypt:\n\n" +
-"    kks -recipient <identifier> \\\n" +
+"    java -jar build/libs/kks-*-all.jar \\\n" +
+"        -recipient <identifier> \\\n" +
 "        -source <plainfile> -sink <cipherfile> \\\n" +
 "        -keystore <storefile> -storepass <password> [-storetype <type>] \\\n" +
 "        -alias <name> [-keypass <password>] \\\n" +
 "       [-ldap <url>]\n\n" +
 "To decrypt and verify:\n\n" +
-"    kks -source <cipherfile> -sink <plainfile> \\\n" +
+"    java -jar build/libs/kks-*-all.jar \\\n" +
+"        -source <cipherfile> -sink <plainfile> \\\n" +
 "        -keystore <storefile> -storepass <password> [-storetype <type>] \\\n" +
 "        -alias <name> [-keypass <password>] \\\n" +
 "       [-ldap <url>]\n\n" +
