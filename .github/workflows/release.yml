@@ -1,0 +1,28 @@
+name: Publish package to the Maven Central Repository and GitHub Packages
+on:
+  push:
+    branches:    
+    - 'release/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - id: install-secret-key
+        name: Install gpg secret key
+        run: |
+          cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
+          gpg --list-secret-keys          
+          
+      - id: gradle-publish
+        name: Publish to the Maven Central Repository
+        run: ./gradlew publish
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
