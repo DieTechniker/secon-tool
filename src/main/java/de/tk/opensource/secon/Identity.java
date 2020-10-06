@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,19 +18,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
+package de.tk.opensource.secon;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 /**
- * Identifiziert einen Kommunikationsteilnehmer im KKS, welche durch einen privaten Schlüssel und das dazugehörige
+ * Identifiziert einen Kommunikationsteilnehmer im SECON, welche durch einen privaten Schlüssel und das dazugehörige
  * Zertifikat gekennzeichnet ist.
  * Dies ist eine Schnittstelle für Serviceprovider.
  *
  * @author Christian Schlichtherle
  */
-public interface KksIdentity {
+public interface Identity {
 
     /**
      * Gibt den privaten Schlüssel für diesen Kommunikationsteilnehmer zurück.

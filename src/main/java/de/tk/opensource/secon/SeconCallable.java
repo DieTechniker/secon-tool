@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,10 +18,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package de.tk.opensource.secon;
+
+import java.util.concurrent.Callable;
+
 /**
- * Stellt CMS-Dienste (Cryptographic Message Syntax) für das Krankenkassenkommunikationssystem (KKS) bereit.
+ * Eine funktionale Schnittstelle, die ein beliebiges Ergebnis produzieren kann und dabei möglicherweise eine
+ * {@link SeconException} auslöst.
  *
- * @see de.tk.security.kks.KKS
- * @author Christian Schlichtherle
+ * @param <V> Der Typ des Erzeugnisses.
  */
-package de.tk.security.kks;
+@FunctionalInterface
+public interface SeconCallable<V> extends Callable<V> {
+
+    @Override
+    V call() throws SeconException;
+}

@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
+package de.tk.opensource.secon;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
@@ -37,7 +37,7 @@ import static javax.naming.directory.SearchControls.ONELEVEL_SCOPE;
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author Christian Schlichtherle
  */
-final class LdapDirectory implements KksDirectory {
+final class LdapDirectory implements Directory {
 
     private static final Comparator<X509Certificate> CERTIFICATE_COMPARATOR =
             Comparator.comparing(X509Certificate::getNotAfter);

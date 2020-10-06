@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,19 +18,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
-
 /**
- * Zeigt an, dass das im KKS-Kontext {@linkplain KksSubscriber#certificate() konfigurierte Zertifikat} zu keinem der
- * vorgesehenen Empfänger einer verschlüsselten Nachricht passt und die Nachricht daher nicht entschlüsselt werden kann.
- * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
+ * Stellt CMS-Dienste (Cryptographic Message Syntax) für das Krankenkassenkommunikationssystem (SECON) bereit.
  *
+ * @see de.tk.opensource.secon.SECON
  * @author Christian Schlichtherle
  */
-public class KksCertificateMismatchException extends KksException {
-
-    private static final long serialVersionUID = 0L;
-
-    KksCertificateMismatchException() {
-    }
-}
+package de.tk.opensource.secon;

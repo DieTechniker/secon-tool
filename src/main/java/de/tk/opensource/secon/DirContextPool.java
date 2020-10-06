@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,33 +18,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
+package de.tk.opensource.secon;
 
 import global.namespace.fun.io.api.function.XConsumer;
 
-import javax.naming.NamingEnumeration;
-import java.util.concurrent.Callable;
+import javax.naming.directory.DirContext;
 
 /**
  * @author Christian Schlichtherle
  */
 @FunctionalInterface
-interface NamingCollection<T> {
+interface DirContextPool {
 
-    static <T> NamingCollection<T> from(Callable<NamingEnumeration<T>> c) {
-        return c::call;
-    }
+    DirContext newDirContext() throws Exception;
 
-    NamingEnumeration<T> newEnumeration() throws Exception;
-
-    default void forEach(final XConsumer<T> consumer) throws Exception {
-        final NamingEnumeration<T> e = newEnumeration();
-        SideEffect.runAll(
-                () -> {
-                    while (e.hasMore()) {
-                        consumer.accept(e.next());
-                    }
-                },
-                e::close);
+    default void accept(final XConsumer<DirContextVisitor> client) throws Exception {
+        final DirContext context = newDirContext();
+        final DirContextVisitor visitor = () -> context;
+        SideEffect.runAll(() -> client.accept(visitor), context::close);
     }
 }

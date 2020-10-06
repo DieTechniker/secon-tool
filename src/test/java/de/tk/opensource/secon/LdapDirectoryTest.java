@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,10 +18,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
+package de.tk.opensource.secon;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
+import de.tk.opensource.secon.Directory;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -30,7 +32,7 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
-import static de.tk.security.kks.KKS.directory;
+import static de.tk.opensource.secon.SECON.*;
 import static java.lang.Character.toUpperCase;
 import static java.util.Locale.ENGLISH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("LDAP")
 public class LdapDirectoryTest {
 
-    private final KksDirectory dir = directory(URI.create("ldap://localhost"));
+    private final Directory dir = directory(URI.create("ldap://localhost"));
 
     @Test
     void BITMARCK_Service_GmbH() throws Exception {

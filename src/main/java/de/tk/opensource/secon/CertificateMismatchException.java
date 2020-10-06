@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,19 +18,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
-
-import java.util.concurrent.Callable;
+package de.tk.opensource.secon;
 
 /**
- * Eine funktionale Schnittstelle, die ein beliebiges Ergebnis produzieren kann und dabei möglicherweise eine
- * {@link KksException} auslöst.
+ * Zeigt an, dass das im SECON-Kontext {@linkplain Subscriber#certificate() konfigurierte Zertifikat} zu keinem der
+ * vorgesehenen Empfänger einer verschlüsselten Nachricht passt und die Nachricht daher nicht entschlüsselt werden kann.
+ * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
- * @param <V> Der Typ des Erzeugnisses.
+ * @author Christian Schlichtherle
  */
-@FunctionalInterface
-public interface KksCallable<V> extends Callable<V> {
+public class CertificateMismatchException extends SeconException {
 
-    @Override
-    V call() throws KksException;
+    private static final long serialVersionUID = 0L;
+
+    CertificateMismatchException() {
+    }
 }
