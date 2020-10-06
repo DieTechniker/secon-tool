@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,18 +18,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
+package de.tk.opensource.secon;
 
 /**
- * Zeigt an, dass bei der Signaturprüfung eine ungültige digitale Signatur gefunden wurde.
+ * Zeigt an, dass das im SECON-Kontext {@linkplain Subscriber#certificate() konfigurierte Zertifikat} zu keinem der
+ * vorgesehenen Empfänger einer verschlüsselten Nachricht passt und die Nachricht daher nicht entschlüsselt werden kann.
  * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
  * @author Christian Schlichtherle
  */
-public class KksInvalidSignatureException extends KksException {
+public class CertificateMismatchException extends SeconException {
 
     private static final long serialVersionUID = 0L;
 
-    KksInvalidSignatureException() {
+    CertificateMismatchException() {
     }
 }

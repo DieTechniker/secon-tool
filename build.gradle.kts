@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -22,7 +22,7 @@ group = "de.tk.opensource"
 version = "0.0.1-SNAPSHOT"
 
 application {
-    mainClassName = "de.tk.security.kks.Main"
+    mainClassName = "de.tk.opensource.secon.Main"
 }
 
 dependencies {
@@ -99,9 +99,9 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             pom {
-                name.set("kks-encryption")
+                name.set("secon-tool")
                 description.set("A library for secure communication in german health care and social affairs sector. Based on specifications in 'GKV Anlage 16 SECON'")
-                url.set("https://github.com/DieTechniker/kks-encryption")
+                url.set("https://github.com/DieTechniker/secon-tool")
                 licenses {
                     license {
                         name.set("GNU Lesser General Public License, Version 3")
@@ -116,9 +116,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/DieTechniker/kks-encryption.git")
-                    developerConnection.set("scm:git:ssh://github.com/DieTechniker/kks-encryption.git")
-                    url.set("https://github.com/DieTechniker/kks-encryption")
+                    connection.set("scm:git:git://github.com/DieTechniker/secon-tool.git")
+                    developerConnection.set("scm:git:ssh://github.com/DieTechniker/secon-tool.git")
+                    url.set("https://github.com/DieTechniker/secon-tool")
                 }
             }
         }
@@ -147,7 +147,7 @@ publishing {
         maven {
             // GitHubPackages
 			name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/DieTechniker/kks-encryption")
+            url = uri("https://maven.pkg.github.com/DieTechniker/secon-tool")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")

@@ -1,1 +1,1 @@
-rootProject.name = "kks"
+rootProject.name = "secon-tool"

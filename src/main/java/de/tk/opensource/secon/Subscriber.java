@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
+package de.tk.opensource.secon;
 
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XFunction;
@@ -64,28 +64,27 @@ import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 
+import static de.tk.opensource.secon.SECON.*;
 import static java.util.Objects.*;
 
 import static org.bouncycastle.jce.provider.BouncyCastleProvider.*;
 
-import static de.tk.security.kks.KKS.*;
-
 /**
- * Ein Kontextobjekt, welches einen Kommunikationsteilnehmer im KKS repräsentiert und diesem das Versenden und Empfangen
+ * Ein Kontextobjekt, welches einen Kommunikationsteilnehmer im SECON repräsentiert und diesem das Versenden und Empfangen
  * von Nachrichten im CMS-Format (Cryptographic Message Syntax) ermöglicht.
  *
  * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author  Christian Schlichtherle
  */
-public final class KksSubscriber {
+public final class Subscriber {
 
 	private volatile PrivateKey privateKey;
 	private volatile X509Certificate certificate;
 
-	private final KksIdentity identity;
-	private final KksDirectory[] directories;
+	private final Identity identity;
+	private final Directory[] directories;
 
-	KksSubscriber(final KksIdentity identity, final KksDirectory[] directories) {
+	Subscriber(final Identity identity, final Directory[] directories) {
 		this.identity = identity;
 		this.directories = directories;
 	}
@@ -121,23 +120,23 @@ public final class KksSubscriber {
 	}
 
 	private X509Certificate certificate(final X509CertSelector selector) throws Exception {
-		for (final KksDirectory dir : directories) {
+		for (final Directory dir : directories) {
 			final Optional<X509Certificate> cert = dir.certificate(selector);
 			if (cert.isPresent()) {
 				return cert.get();
 			}
 		}
-		throw new KksCertificateNotFoundException(selector.toString());
+		throw new CertificateNotFoundException(selector.toString());
 	}
 
 	private X509Certificate certificate(final String identifier) throws Exception {
-		for (final KksDirectory dir : directories) {
+		for (final Directory dir : directories) {
 			final Optional<X509Certificate> cert = dir.certificate(identifier);
 			if (cert.isPresent()) {
 				return cert.get();
 			}
 		}
-		throw new KksCertificateNotFoundException(identifier);
+		throw new CertificateNotFoundException(identifier);
 	}
 
 	private OutputStream sign(final OutputStream out) throws Exception {
@@ -171,7 +170,7 @@ public final class KksSubscriber {
 
 	private final XFunction<OutputStream, OutputStream> sign = Streams.fixOutputstreamClose(this::sign);
 
-	private InputStream verify(final InputStream in, final KksVerifier verifier) throws Exception {
+	private InputStream verify(final InputStream in, final Verifier verifier) throws Exception {
 		final CMSSignedDataParser parser =
 			new CMSSignedDataParser(
 				new JcaDigestCalculatorProviderBuilder().setProvider(PROVIDER_NAME).build(),
@@ -204,7 +203,7 @@ public final class KksSubscriber {
 								.setProvider(PROVIDER_NAME)
 								.build(cert);
 						if (!info.verify(ver)) {
-							throw new KksInvalidSignatureException();
+							throw new InvalidSignatureException();
 						}
 						verifier.verify(cert);
 					}
@@ -212,7 +211,7 @@ public final class KksSubscriber {
 			};
 	}
 
-	private XFunction<InputStream, InputStream> verify(KksVerifier v) {
+	private XFunction<InputStream, InputStream> verify(Verifier v) {
 		return Streams.fixInputstreamClose(in -> verify(in, v));
 	}
 
@@ -245,7 +244,7 @@ public final class KksSubscriber {
 						.getRecipientInfos()
 						.get(new JceKeyTransRecipientId(cert))
 				)
-				.orElseThrow(KksCertificateMismatchException::new);
+				.orElseThrow(CertificateMismatchException::new);
 
 		final Recipient recipient =
 			new JceKeyTransEnvelopedRecipient(key).setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -267,7 +266,7 @@ public final class KksSubscriber {
      * es andernfalls zu Datenverlust kommt!
      * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
 	 */
-	public KksCallable<OutputStream> signAndEncryptTo(
+	public SeconCallable<OutputStream> signAndEncryptTo(
 		final Callable<OutputStream> output,
 		final X509Certificate		 recipient,
 		final X509Certificate...     others
@@ -295,7 +294,7 @@ public final class KksSubscriber {
      * es andernfalls zu Datenverlust kommt!
      * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
 	 */
-	public KksCallable<OutputStream> signAndEncryptTo(
+	public SeconCallable<OutputStream> signAndEncryptTo(
 		final Callable<OutputStream> output,
 		final String				 recipientId,
 		final String... 			 otherIds
@@ -311,7 +310,7 @@ public final class KksSubscriber {
 		return callable(signAndEncryptTo(socket(output), recipients));
 	}
 
-	private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input, KksVerifier v) {
+	private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input, Verifier v) {
 		return input.map(verify(v).compose(decrypt));
 	}
 
@@ -324,8 +323,8 @@ public final class KksSubscriber {
      * andernfalls die digitalen Signaturen nicht überprüft werden!
      * Es wird daher empfohlen, die erneuerbaren Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
 	 */
-	public KksCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
-		return callable(decryptAndVerifyFrom(socket(input), KksVerifier.NULL));
+	public SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
+		return callable(decryptAndVerifyFrom(socket(input), Verifier.NULL));
 	}
 
 	/**
@@ -338,7 +337,7 @@ public final class KksSubscriber {
      * andernfalls die digitalen Signaturen nicht überprüft werden!
      * Es wird daher empfohlen, die erneuerbaren Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
 	 */
-	public KksCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input, KksVerifier v) {
+	public SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input, Verifier v) {
 		return callable(decryptAndVerifyFrom(socket(input), v));
 	}
 }

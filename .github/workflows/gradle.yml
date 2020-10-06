@@ -27,16 +27,16 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: fat-jar
-          path: build/libs/kks-*-all.jar
+          path: build/libs/secon-tool-*-all.jar
       - uses: actions/upload-artifact@v2
         with:
           name: jar
           path: |
-            build/libs/kks-*.jar
-            !build/libs/kks-*-all.jar
+            build/libs/secon-tool-*.jar
+            !build/libs/secon-tool-*-all.jar
       - uses: actions/upload-artifact@v2
         with:
           name: zip-distribution
           path: |
-            build/distributions/kks-*.zip
-            !build/distributions/kks-shadow-*.zip
+            build/distributions/secon-tool-*.zip
+            !build/distributions/secon-tool-shadow-*.zip

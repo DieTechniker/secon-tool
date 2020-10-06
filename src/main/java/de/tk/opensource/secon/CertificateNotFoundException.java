@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,27 +18,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
+package de.tk.opensource.secon;
 
 /**
- * Der Basistyp für alle Ausnahmen, die von diesem API ausgelöst werden können.
+ * Zeigt an, dass das für die Überprüfung einer digitalen Signatur benötigte Zertifikat nicht gefunden werden konnte.
+ * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
  * @author Christian Schlichtherle
  */
-public class KksException extends Exception {
+public class CertificateNotFoundException extends SeconException {
 
-    public KksException() {
-    }
+    private static final long serialVersionUID = 0L;
 
-    public KksException(String message) {
+    CertificateNotFoundException(String message) {
         super(message);
-    }
-
-    public KksException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public KksException(Throwable cause) {
-        super(cause);
     }
 }

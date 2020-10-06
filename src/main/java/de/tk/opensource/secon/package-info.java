@@ -2,8 +2,8 @@
  * Copyright © 2020 Techniker Krankenkasse
  * Copyright © 2020 BITMARCK Service GmbH
  *
- * This file is part of kks-encryption
- * (see https://github.com/DieTechniker/kks-encryption).
+ * This file is part of secon-tool
+ * (see https://github.com/DieTechniker/secon-tool).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,23 +18,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.tk.security.kks;
-
-import global.namespace.fun.io.api.function.XConsumer;
-
-import javax.naming.directory.DirContext;
-
 /**
+ * Stellt CMS-Dienste (Cryptographic Message Syntax) für das Krankenkassenkommunikationssystem (SECON) bereit.
+ *
+ * @see de.tk.opensource.secon.SECON
  * @author Christian Schlichtherle
  */
-@FunctionalInterface
-interface DirContextPool {
-
-    DirContext newDirContext() throws Exception;
-
-    default void accept(final XConsumer<DirContextVisitor> client) throws Exception {
-        final DirContext context = newDirContext();
-        final DirContextVisitor visitor = () -> context;
-        SideEffect.runAll(() -> client.accept(visitor), context::close);
-    }
-}
+package de.tk.opensource.secon;
