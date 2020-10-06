@@ -155,4 +155,6 @@ publishing {
 signing {
     sign(publishing.publications["mavenJava"])
 }
-
+tasks.withType<Sign>().configureEach {
+    onlyIf { false }
+}
