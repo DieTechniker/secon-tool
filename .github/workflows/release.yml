@@ -13,12 +13,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - id: install-secret-key
-        name: Install gpg secret key
-        run: |
-          cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
-          gpg --list-secret-keys          
-          
       - id: gradle-publish
         name: Publish to the Maven Central Repository
         run: ./gradlew publish --info
