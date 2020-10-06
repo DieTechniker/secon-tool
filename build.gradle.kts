@@ -123,17 +123,10 @@ publishing {
             }
         }
     }
-	
-	repositories {
-        maven {
-            val releasesRepoUrl = "$buildDir/repos/releases"
-            val snapshotsRepoUrl = "$buildDir/repos/snapshots"
-            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-        }
-    }
-	
+		
     repositories {
-        maven {		
+        /*
+		maven {		
             // MavenCentral
 			name = "OSSRH"
             val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
@@ -144,6 +137,7 @@ publishing {
                 password = System.getenv("MAVEN_PASSWORD")				
             }			
         }
+		*/
         maven {
             // GitHubPackages
 			name = "GitHubPackages"
