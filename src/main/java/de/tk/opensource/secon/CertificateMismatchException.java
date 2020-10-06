@@ -21,7 +21,11 @@
 package de.tk.opensource.secon;
 
 /**
+<<<<<<< HEAD:src/main/java/de/tk/opensource/secon/CertificateMismatchException.java
  * Zeigt an, dass das im SECON-Kontext {@linkplain Subscriber#certificate() konfigurierte Zertifikat} zu keinem der
+=======
+ * Zeigt an, dass das im KKS-Kontext {@linkplain KksSubscriber#certificate() konfigurierte Zertifikat} zu keinem der
+>>>>>>> upstream/master:src/main/java/de/tk/security/kks/KksCertificateMismatchException.java
  * vorgesehenen Empfänger einer verschlüsselten Nachricht passt und die Nachricht daher nicht entschlüsselt werden kann.
  * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
