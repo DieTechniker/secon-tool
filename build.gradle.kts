@@ -127,8 +127,8 @@ publishing {
     }
 		
     repositories {
-        /*
-		maven {		
+        
+	maven {		
             // MavenCentral
 			name = "OSSRH"
             val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
@@ -139,7 +139,7 @@ publishing {
                 password = System.getenv("MAVEN_PASSWORD")				
             }			
         }
-		*/
+
         maven {
             // GitHubPackages
 			name = "GitHubPackages"
