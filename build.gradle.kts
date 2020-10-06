@@ -39,6 +39,7 @@ plugins {
     application
     `java-library`
     `maven-publish`
+	signing
     id("com.github.johnrengelman.shadow") version "6.0.0"
     id("biz.aQute.bnd.builder") version "5.1.2"
 	id("net.minecrell.licenser") version "0.4.1"
@@ -98,6 +99,7 @@ license {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
+			from(components["java"])
             pom {
                 name.set("secon-tool")
                 description.set("A library for secure communication in german health care and social affairs sector. Based on specifications in 'GKV Anlage 16 SECON'")
@@ -149,3 +151,8 @@ publishing {
         }		
     }
 }
+
+signing {
+    sign(publishing.publications["mavenJava"])
+}
+
