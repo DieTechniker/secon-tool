@@ -39,7 +39,7 @@ plugins {
     application
     `java-library`
     `maven-publish`
-	signing
+    signing
     id("com.github.johnrengelman.shadow") version "6.0.0"
     id("biz.aQute.bnd.builder") version "5.1.2"
 	id("net.minecrell.licenser") version "0.4.1"
@@ -154,6 +154,7 @@ publishing {
 
 signing {
     useGpgCmd()
+    setRequired(false)
     sign(publishing.publications["mavenJava"])
 }
 
