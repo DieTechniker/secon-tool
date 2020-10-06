@@ -21,7 +21,7 @@ jobs:
           
       - id: gradle-publish
         name: Publish to the Maven Central Repository
-        run: ./gradlew publish
+        run: ./gradlew publish --info
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USER }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
