@@ -15,7 +15,7 @@ jobs:
           java-version: 11
       - id: gradle-publish
         name: Publish to the Maven Central Repository
-        run: ./gradlew publish --info -Psigning.secretKeyRingFile=${{ secrets.GPG_PRIVATE_KEY }} -Psigning.password=${{ secrets.GPG_PASSPHRASE }} -Psigning.keyId=${{ secrets.GPG_KEY_ID }}
+        run: ./gradlew publish --info -Psigning.gnupg.homeDir=/home/runner/.gnupg -Psigning.gnupg.passphrase=${{ secrets.GPG_PASSPHRASE }} -Psigning.gnupg.keyName=${{ secrets.GPG_KEY_ID }}
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USER }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
