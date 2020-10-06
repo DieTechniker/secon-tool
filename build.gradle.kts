@@ -96,10 +96,6 @@ license {
 	newLine = false
 }
 
-signing {
-    sign(publishing.publications["mavenJava"])
-}
-
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -155,3 +151,8 @@ publishing {
         }		
     }
 }
+
+signing {
+    sign(publishing.publications["mavenJava"])
+}
+
