@@ -112,6 +112,11 @@ publishing {
                 }
                 developers {
                     developer {
+                        id.set("christian-schlichtherle")
+                        name.set("Christian Schlichtherle")
+                        email.set("christian@schlichtherle.de")
+                    }			
+                    developer {
                         id.set("loetifuss")
                         name.set("Wolfgang Schmiesing")
                         email.set("wolfgang.schmiesing@googlemail.com")
