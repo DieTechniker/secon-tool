@@ -144,7 +144,7 @@ publishing {
                 password = System.getenv("MAVEN_PASSWORD")				
             }			
         }
-
+/*
         maven {
             // GitHubPackages
 			name = "GitHubPackages"
@@ -154,6 +154,7 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }			
         }		
+*/	
     }
 }
 
