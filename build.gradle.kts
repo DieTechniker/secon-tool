@@ -39,10 +39,10 @@ plugins {
     application
     `java-library`
     `maven-publish`
-	signing
+    signing
     id("com.github.johnrengelman.shadow") version "6.0.0"
     id("biz.aQute.bnd.builder") version "5.1.2"
-	id("net.minecrell.licenser") version "0.4.1"
+    id("net.minecrell.licenser") version "0.4.1"
 }
 
 repositories {
@@ -127,8 +127,8 @@ publishing {
     }
 		
     repositories {
-        /*
-		maven {		
+        
+	maven {		
             // MavenCentral
 			name = "OSSRH"
             val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
@@ -139,7 +139,7 @@ publishing {
                 password = System.getenv("MAVEN_PASSWORD")				
             }			
         }
-		*/
+
         maven {
             // GitHubPackages
 			name = "GitHubPackages"
@@ -153,6 +153,8 @@ publishing {
 }
 
 signing {
-    sign(publishing.publications["mavenJava"])
+    val signingKey: String? by project
+    val signingPassword: String? by project
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications["mavenJava"])	
 }
-
