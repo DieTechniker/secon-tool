@@ -16,6 +16,7 @@ jobs:
       - id: install-secret-key
         name: Install gpg secret key
         run: |
+          echo -e "${{ secrets.GPG_PRIVATE_KEY }}"
           cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
           gpg --list-secret-keys
       - id: gradle-publish
