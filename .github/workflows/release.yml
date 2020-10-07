@@ -16,13 +16,14 @@ jobs:
       - id: install-secret-key
         name: Install gpg secret key
         run: |
-          echo -e "${{ secrets.GPG_PRIVATE_KEY }}"
           cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
           gpg --list-secret-keys
       - id: gradle-publish
         name: Publish to the Maven Central Repository
-        run: ./gradlew publish --info -Psigning.secretKeyRingFile=secret-keys.gpg -Psigning.password=${{ secrets.GPG_PASSPHRASE }} -Psigning.keyId=${{ secrets.GPG_KEY_ID }}
+        run: ./gradlew publish --info
         env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
           MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USER }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
