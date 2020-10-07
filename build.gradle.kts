@@ -158,7 +158,3 @@ signing {
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign(publishing.publications["mavenJava"])	
 }
-
-tasks.withType<Sign>().configureEach {
-    onlyIf { true }
-}
