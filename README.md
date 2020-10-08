@@ -48,3 +48,18 @@ Für Hilfe zu der Bedeutung der einzelnen Parameter rufen Sie bitte das Tool ohn
 ## API
 
 Siehe [Sourcecode](src/main/java/de/tk/opensourcey/secon/SECON.java) und Javadoc der `SECON`-Klasse.
+
+## Download
+Latest version: https://search.maven.org/artifact/de.tk.opensource/secon-tool
+
+Maven:
+
+    <dependency>
+      <groupId>de.tk.opensource</groupId>
+      <artifactId>secon-tool</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+Gradle:
+
+    implementation 'de.tk.opensource:secon-tool:1.0.0'
