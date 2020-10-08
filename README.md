@@ -13,8 +13,25 @@ der [GKV Anlage 16 SecuritySchnittstelle SECON](https://www.gkv-datenaustausch.d
 
 ## Übersicht
 
-Aktuell gibt es noch kein offizielles Release auf Maven Central. Dies wird aber in Kürze erfolgen.
-Daher muss der Quellcode aktuell zunächst gebaut werden.
+### Download
+
+Aktuelle Version: https://search.maven.org/artifact/de.tk.opensource/secon-tool
+
+Maven:
+
+    <dependency>
+      <groupId>de.tk.opensource</groupId>
+      <artifactId>secon-tool</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+Gradle:
+
+    implementation 'de.tk.opensource:secon-tool:1.0.0'
+
+### Build
+
+Um den Quellcode zu bauen sind folgende Schritte nötig
 
 ```
 git clone https://github.com/DieTechniker/secon-tool.git
@@ -48,19 +65,3 @@ Für Hilfe zu der Bedeutung der einzelnen Parameter rufen Sie bitte das Tool ohn
 ## API
 
 Siehe [Sourcecode](src/main/java/de/tk/opensourcey/secon/SECON.java) und Javadoc der `SECON`-Klasse.
-
-## Download
-
-Aktuelle Version: https://search.maven.org/artifact/de.tk.opensource/secon-tool
-
-Maven:
-
-    <dependency>
-      <groupId>de.tk.opensource</groupId>
-      <artifactId>secon-tool</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-
-Gradle:
-
-    implementation 'de.tk.opensource:secon-tool:1.0.0'
