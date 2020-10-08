@@ -50,7 +50,8 @@ Für Hilfe zu der Bedeutung der einzelnen Parameter rufen Sie bitte das Tool ohn
 Siehe [Sourcecode](src/main/java/de/tk/opensourcey/secon/SECON.java) und Javadoc der `SECON`-Klasse.
 
 ## Download
-Latest version: https://search.maven.org/artifact/de.tk.opensource/secon-tool
+
+Aktuelle Version: https://search.maven.org/artifact/de.tk.opensource/secon-tool
 
 Maven:
 
