@@ -28,6 +28,7 @@ application {
 dependencies {
     val junitVersion = "5.6.2"
 
+    implementation("global.namespace.fun-io:fun-io-api:2.4.0")	
     implementation("global.namespace.fun-io:fun-io-bios:2.4.0")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
 
