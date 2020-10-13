@@ -21,9 +21,8 @@
 
 package de.tk.opensource.secon;
 
-import static de.tk.opensource.secon.SECON.*;
-import static java.util.Objects.*;
-import static org.bouncycastle.jce.provider.BouncyCastleProvider.*;
+import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.api.function.XFunction;
 
 import java.io.BufferedInputStream;
 import java.io.FilterInputStream;
@@ -66,13 +65,13 @@ import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 
-import global.namespace.fun.io.api.Socket;
-import global.namespace.fun.io.api.function.XFunction;
+import static java.util.Objects.*;
+
+import static org.bouncycastle.jce.provider.BouncyCastleProvider.*;
+
+import static de.tk.opensource.secon.SECON.*;
 
 /**
- * Ein Kontextobjekt, welches einen Kommunikationsteilnehmer im SECON repräsentiert und diesem das Versenden und Empfangen
- * von Nachrichten im CMS-Format (Cryptographic Message Syntax) ermöglicht.
- *
  * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author  Christian Schlichtherle
  */
@@ -257,15 +256,7 @@ final class DefaultSubscriber implements Subscriber {
 		return output.map(sign.compose(encrypt(recipients)));
 	}
 
-	/**
-	 * Erzeugt einen erneuerbaren Ausgabestrom, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
-     * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
-     * Die Empfänger werden durch die gegebenen Zertifikate identifiziert.
-     * <p>
-     * Der Aufrufer ist verpflichtet, die erzeugten Ausgabeströme zu {@linkplain OutputStream#close() schließen}, da
-     * es andernfalls zu Datenverlust kommt!
-     * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
-	 */
+	@Override
 	public SeconCallable<OutputStream> signAndEncryptTo(
 		final Callable<OutputStream> output,
 		final X509Certificate		 recipient,
@@ -282,18 +273,7 @@ final class DefaultSubscriber implements Subscriber {
 		return callable(signAndEncryptTo(socket(output), recipients));
 	}
 
-	/**
-	 * Erzeugt einen erneuerbaren Ausgabestrom, der die Daten, die in den gegebenen erneuerbaren Ausgabestrom
-     * geschrieben werden, signiert und für die gegebenen Empfänger verschlüsselt.
-     * Die Empfänger werden durch die gegebenen Institutionskennzeichen identifiziert.
-     * Diese fangen typischerweise mit "IK" oder "BN" an, gefolgt von einer neunstelligen Zahl gemäß
-     * <a href="https://www.gkv-datenaustausch.de/media/dokumente/faq/Gemeinsames_Rundschreiben_IK_2015-03.pdf">Rundschreiben ARGE-IK</a>.
-     * Die entsprechenden Zertifikate werden vom LDAP-Server geladen.
-     * <p>
-     * Der Aufrufer ist verpflichtet, die erzeugten Ausgabeströme zu {@linkplain OutputStream#close() schließen}, da
-     * es andernfalls zu Datenverlust kommt!
-     * Es wird daher empfohlen, die erneuerbaren Ausgabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
-	 */
+	@Override
 	public SeconCallable<OutputStream> signAndEncryptTo(
 		final Callable<OutputStream> output,
 		final String				 recipientId,
@@ -314,29 +294,12 @@ final class DefaultSubscriber implements Subscriber {
 		return input.map(verify(v).compose(decrypt));
 	}
 
-	/**
-     * Erzeugt einen erneuerbaren Eingabestrom, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
-     * gelesen werden, entschlüsselt und die digitalen Signaturen überprüft.
-     * Bei dieser Variante der Methode werden die Zertifikate der Absender <em>nicht überprüft</em>!
-     * <p>
-     * Der Aufrufer ist verpflichtet, die erzeugten Eingabeströme zu {@linkplain InputStream#close() schließen}, da
-     * andernfalls die digitalen Signaturen nicht überprüft werden!
-     * Es wird daher empfohlen, die erneuerbaren Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
-	 */
+	@Override
 	public SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
 		return callable(decryptAndVerifyFrom(socket(input), Verifier.NULL));
 	}
 
-	/**
-     * Erzeugt einen erneuerbaren Eingabestrom, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom
-     * gelesen werden, entschlüsselt und die digitalen Signaturen überprüft.
-     * Bei dieser Variante der Methode werden die Zertifikate der Absender zusätzlich durch den gegebenen Verifizierer
-     * überprüft.
-     * <p>
-     * Der Aufrufer ist verpflichtet, die erzeugten Eingabeströme zu {@linkplain InputStream#close() schließen}, da
-     * andernfalls die digitalen Signaturen nicht überprüft werden!
-     * Es wird daher empfohlen, die erneuerbaren Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
-	 */
+	@Override
 	public SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input, Verifier v) {
 		return callable(decryptAndVerifyFrom(socket(input), v));
 	}
