@@ -76,7 +76,7 @@ import global.namespace.fun.io.api.function.XFunction;
  * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author  Christian Schlichtherle
  */
-public final class DefaultSubscriber implements Subscriber {
+final class DefaultSubscriber implements Subscriber {
 
 	private volatile PrivateKey privateKey;
 	private volatile X509Certificate certificate;
