@@ -19,7 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 group = "de.tk.opensource"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.1-SNAPSHOT"
 
 application {
     mainClassName = "de.tk.opensource.secon.Main"
@@ -28,6 +28,7 @@ application {
 dependencies {
     val junitVersion = "5.6.2"
 
+    implementation("global.namespace.fun-io:fun-io-api:2.4.0")	
     implementation("global.namespace.fun-io:fun-io-bios:2.4.0")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
 
