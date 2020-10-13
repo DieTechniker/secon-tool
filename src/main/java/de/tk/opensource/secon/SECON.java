@@ -20,13 +20,8 @@
  */
 package de.tk.opensource.secon;
 
-import global.namespace.fun.io.api.Socket;
-import global.namespace.fun.io.bios.BIOS;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import static java.util.Objects.*;
 
-import javax.naming.Context;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
@@ -36,7 +31,14 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.Callable;
 
-import static java.util.Objects.requireNonNull;
+import javax.naming.Context;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.bios.BIOS;
 
 /**
  * Stellt CMS-Dienste (Cryptographic Message Syntax) für das Krankenkassenkommunikationssystem (SECON) bereit.
@@ -228,7 +230,7 @@ public final class SECON {
             final Directory other = others[i];
             directories[++i] = requireNonNull(other);
         }
-        return new Subscriber(requireNonNull(identity), directories);
+        return new DefaultSubscriber(requireNonNull(identity), directories);
     }
 
     /**
