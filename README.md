@@ -1,7 +1,7 @@
 # SECON Verschlüsselung auf Basis von [Crytographic Message Syntax](https://tools.ietf.org/html/rfc5652)
 
 Diese Bibliothek implementiert einen sicheren Datenaustausch für die Kommunikation im Gesundheits- und Sozialwesen. Grundlage ist dabei die Spezifikation
-der [GKV Anlage 16 SecuritySchnittstelle SECON](https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf)
+der [GKV Anlage 16 SecuritySchnittstelle SECON](https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16.pdf)
 	
 ## Eingesetzte Technologien
 
@@ -22,12 +22,12 @@ Maven:
     <dependency>
       <groupId>de.tk.opensource</groupId>
       <artifactId>secon-tool</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.2</version>
     </dependency>
 
 Gradle:
 
-    implementation 'de.tk.opensource:secon-tool:1.0.0'
+    implementation 'de.tk.opensource:secon-tool:1.0.2'
 
 ### Build
 
