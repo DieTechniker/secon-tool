@@ -18,7 +18,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.tk.opensource.secon;
 
 import global.namespace.fun.io.api.Socket;
@@ -34,6 +33,7 @@ import java.security.PrivateKey;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.security.spec.PSSParameterSpec;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -58,7 +58,6 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
-import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OutputEncryptor;
@@ -218,10 +217,8 @@ final class DefaultSubscriber implements Subscriber {
 		throws Exception
 	{
 		final CMSEnvelopedDataStreamGenerator gen = new CMSEnvelopedDataStreamGenerator();
-		for (final Callable<X509Certificate> recipient : recipients) {
-			final X509Certificate cert = recipient.call();
-			gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cert).setProvider(PROVIDER_NAME));
-		}
+		Arrays.stream(recipients).map(RecipientInfoGeneratorFactory::create).forEach(info -> gen.addRecipientInfoGenerator(info));
+
 		final OutputEncryptor encryptor =
 			new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC)
 				.setProvider(PROVIDER_NAME)
@@ -304,4 +301,3 @@ final class DefaultSubscriber implements Subscriber {
 		return callable(decryptAndVerifyFrom(socket(input), v));
 	}
 }
-
