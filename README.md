@@ -5,11 +5,9 @@ der [GKV Anlage 16 SecuritySchnittstelle SECON](https://www.gkv-datenaustausch.d
 	
 ## Eingesetzte Technologien
 
-[Cryptographic Message Syntax (CMS)](https://tools.ietf.org/html/rfc5652) 
-
-[BouncyCastle](https://bouncycastle.org/)
-
-[Fun I/O](https://christian-schlichtherle.github.io/fun-io/)
++ [Cryptographic Message Syntax (CMS)](https://tools.ietf.org/html/rfc5652)
++ [BouncyCastle](https://bouncycastle.org/)
++ [Fun I/O](https://christian-schlichtherle.github.io/fun-io/)
 
 ## Übersicht
 
@@ -33,7 +31,7 @@ Gradle:
 
 Um den Quellcode zu bauen sind folgende Schritte nötig
 
-```
+```shell script
 git clone https://github.com/DieTechniker/secon-tool.git
 cd secon-tool
 ./gradlew build
@@ -61,6 +59,33 @@ Zum Entschlüsseln und Verifizieren der Signatur einer Datei:
 Für Hilfe zu der Bedeutung der einzelnen Parameter rufen Sie bitte das Tool ohne Parameter auf:
 
     java -jar build/libs/secon-tool-*-all.jar
+
+#### Beispiel
+
+Gemeinsamen Keystore für Alice und Bob einrichten:
+
+```shell script
+keytool -keystore keystore.p12 -storetype PKCS12 -storepass secret -genkey -alias alice -dname CN=alice -keyalg rsa -keysize 4096 -sigalg rsassa-pss -v
+keytool -keystore keystore.p12 -storetype PKCS12 -storepass secret -genkey -alias bob   -dname CN=bob   -keyalg rsa -keysize 4096 -sigalg rsassa-pss -v
+```
+
+In diesem Beispiel teilen sich Alice und Bob der Einfachheit halber den Keystore mit den privaten Schlüsseln.
+Im produktiven Einsatz hat natürlich jede Partei nur Zugriff auf Ihren eigenen privaten Schlüssel und die öffentlichen
+Schlüssel der Kommunikationspartner sollten in Zertifikaten in einem LDAP-Server zur Verfügung gestellt werden.
+
+Alice signiert und verschlüsselt nun einen Brief an Bob:
+
+```shell script
+echo 'Hello Bob!' > letter-to-bob.txt
+java -jar build/libs/secon-tool-*-all.jar -keystore keystore.p12 -storepass secret -alias alice -recipient bob -source letter-to-bob.txt -sink letter-to-bob.cms
+```
+
+Schließlich entschlüsselt und verifiziert Bob den Brief von Alice:
+
+```shell script
+java -jar build/libs/secon-tool-*-all.jar -keystore keystore.p12 -storepass secret -alias bob -source letter-to-bob.cms -sink letter-from-alice.txt
+cat letter-from-alice.txt
+```
 
 ## API
 
