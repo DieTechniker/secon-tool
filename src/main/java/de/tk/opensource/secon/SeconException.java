@@ -27,6 +27,8 @@ package de.tk.opensource.secon;
  */
 public class SeconException extends Exception {
 
+    private static final long serialVersionUID = 0L;
+
     public SeconException() {
     }
 
