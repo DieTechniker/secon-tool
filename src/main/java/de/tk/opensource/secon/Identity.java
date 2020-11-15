@@ -24,8 +24,8 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 /**
- * Identifiziert einen Kommunikationsteilnehmer im SECON, welche durch einen privaten Schlüssel und das dazugehörige
- * Zertifikat gekennzeichnet ist.
+ * Identifiziert einen Kommunikationsteilnehmer im SECON mittels eines privaten Schlüssels und des dazugehörigen
+ * Zertifikats.
  * Dies ist eine Schnittstelle für Serviceprovider.
  *
  * @author Christian Schlichtherle

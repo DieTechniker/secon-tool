@@ -118,7 +118,7 @@ keytool -keystore keystore.p12 -storetype PKCS12 -storepass secret -genkey -alia
 Im produktiven Einsatz darf jede Partei natürlich nur Zugriff auf ihren eigenen privaten Schlüssel haben.
 Entsprechend muss sich jede Partei einen eigenen Keystore mit ihrem privaten Schlüssel anlegen und für die öffentlichen
 Schlüssel der Kommunikationspartner sollte ein LDAP-Server mit Zertifikaten zur Verfügung gestellt werden.
-Die Struktur des LDAP-Servers muss Kapitel 4.6 "Öffentliche Schlüsselverzeichnisse" der
+Das Schema des Directory Information Tree muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
 [Anlage - 16 Security Schnittstelle (SECON)] entsprechen.
 Der URL des LDAP-Servers kann im Kommandozeilentool über den Parameter `-ldap <url>` angegeben werden. 
 
