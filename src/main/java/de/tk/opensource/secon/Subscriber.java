@@ -77,7 +77,9 @@ public interface Subscriber {
 	 * andernfalls die digitalen Signaturen nicht überprüft werden! Es wird daher empfohlen, die erneuerbaren
 	 * Eingabeströme nur in <i>try-with-resources</i>-Anweisungen zu benutzen.
 	 */
-	SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input);
+	default SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
+		return decryptAndVerifyFrom(input, Verifier.NULL);
+	}
 
 	/**
 	 * Erzeugt einen erneuerbaren Eingabestrom, der die Daten, die von dem gegebenen erneuerbaren Eingabestrom gelesen

@@ -291,11 +291,6 @@ final class DefaultSubscriber implements Subscriber {
 	}
 
 	@Override
-	public SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
-		return callable(decryptAndVerifyFrom(socket(input), Verifier.NULL));
-	}
-
-	@Override
 	public SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input, Verifier v) {
 		return callable(decryptAndVerifyFrom(socket(input), v));
 	}
