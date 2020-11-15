@@ -217,8 +217,7 @@ final class DefaultSubscriber implements Subscriber {
 		throws Exception
 	{
 		final CMSEnvelopedDataStreamGenerator gen = new CMSEnvelopedDataStreamGenerator();
-		Arrays.stream(recipients).map(RecipientInfoGeneratorFactory::create).forEach(info -> gen.addRecipientInfoGenerator(info));
-
+		Arrays.stream(recipients).map(RecipientInfoGeneratorFactory::create).forEach(gen::addRecipientInfoGenerator);
 		final OutputEncryptor encryptor =
 			new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC)
 				.setProvider(PROVIDER_NAME)
