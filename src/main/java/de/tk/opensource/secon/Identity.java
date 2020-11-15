@@ -36,6 +36,9 @@ public interface Identity {
      * Gibt den privaten Schlüssel für diesen Kommunikationsteilnehmer zurück.
      * Der private Schlüssel wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um
      * verschlüsselte Nachrichten zu entschlüsseln.
+     *
+     * @throws PrivateKeyNotFoundException falls der private Schlüssel nicht gefunden werden kann.
+     * @throws Exception in allen anderen Fehlerfällen, z.B. wenn ein KeyStore nicht geladen werden kann.
      */
     PrivateKey privateKey() throws Exception;
 
@@ -43,6 +46,9 @@ public interface Identity {
      * Gibt das Zertifikat für diesen Kommunikationsteilnehmer zurück.
      * Das Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um verschlüsselte
      * Nachrichten zu entschlüsseln.
+     *
+     * @throws CertificateNotFoundException falls das Zertifikat nicht gefunden werden kann.
+     * @throws Exception in allen anderen Fehlerfällen, z.B. wenn ein KeyStore nicht geladen werden kann.
      */
     X509Certificate certificate() throws Exception;
 }

@@ -138,8 +138,8 @@ final class DefaultSubscriber implements Subscriber {
 	}
 
 	private OutputStream sign(final OutputStream out) throws Exception {
-		final X509Certificate cert = certificate();
-		final PrivateKey key = privateKey();
+		final PrivateKey key = privateKey(); // may throw `PrivateKeyNotFoundException`
+		final X509Certificate cert = certificate(); // may throw `CertificateNotFoundException`
 		final ASN1ObjectIdentifier sigAlgOID = new ASN1ObjectIdentifier(cert.getSigAlgOID());
 		final ContentSigner signer;
 		if (PKCSObjectIdentifiers.id_RSASSA_PSS.equals(sigAlgOID)) {
@@ -230,8 +230,8 @@ final class DefaultSubscriber implements Subscriber {
 	}
 
 	private InputStream decrypt(final InputStream in) throws Exception {
-		final X509Certificate cert = certificate();
-		final PrivateKey key = privateKey();
+		final PrivateKey key = privateKey(); // may throw `PrivateKeyNotFoundException`
+		final X509Certificate cert = certificate(); // may throw `CertificateNotFoundException`
 		final RecipientInformation info =
 			Optional
 				.ofNullable(

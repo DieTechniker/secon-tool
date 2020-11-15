@@ -21,20 +21,16 @@
 package de.tk.opensource.secon;
 
 /**
- * Zeigt an, dass ein Zertifikat nicht gefunden werden kann.
- * Zertifikate werden benötigt um digitale Signaturen zu überprüfen und Daten zu verschlüsseln.
+ * Zeigt an, dass ein privater Schlüssel nicht gefunden werden kann.
+ * Private Schlüssel werden benötigt um digitale Signaturen zu erstellen und Daten zu entschlüsseln.
  * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
  * @author Christian Schlichtherle
  */
-public class CertificateNotFoundException extends SeconException {
+public class PrivateKeyNotFoundException extends SeconException {
 
     private static final long serialVersionUID = 0L;
 
-    CertificateNotFoundException() {
-    }
-
-    CertificateNotFoundException(String message) {
-        super(message);
+    PrivateKeyNotFoundException() {
     }
 }
