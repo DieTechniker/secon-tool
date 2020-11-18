@@ -24,8 +24,8 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 /**
- * Identifiziert einen Kommunikationsteilnehmer im SECON, welche durch einen privaten Schlüssel und das dazugehörige
- * Zertifikat gekennzeichnet ist.
+ * Identifiziert einen Kommunikationsteilnehmer im SECON mittels eines privaten Schlüssels und des dazugehörigen
+ * Zertifikats.
  * Dies ist eine Schnittstelle für Serviceprovider.
  *
  * @author Christian Schlichtherle
@@ -36,6 +36,9 @@ public interface Identity {
      * Gibt den privaten Schlüssel für diesen Kommunikationsteilnehmer zurück.
      * Der private Schlüssel wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um
      * verschlüsselte Nachrichten zu entschlüsseln.
+     *
+     * @throws PrivateKeyNotFoundException falls der private Schlüssel nicht gefunden werden kann.
+     * @throws Exception in allen anderen Fehlerfällen, z.B. wenn ein KeyStore nicht geladen werden kann.
      */
     PrivateKey privateKey() throws Exception;
 
@@ -43,6 +46,9 @@ public interface Identity {
      * Gibt das Zertifikat für diesen Kommunikationsteilnehmer zurück.
      * Das Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um verschlüsselte
      * Nachrichten zu entschlüsseln.
+     *
+     * @throws CertificateNotFoundException falls das Zertifikat nicht gefunden werden kann.
+     * @throws Exception in allen anderen Fehlerfällen, z.B. wenn ein KeyStore nicht geladen werden kann.
      */
     X509Certificate certificate() throws Exception;
 }

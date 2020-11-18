@@ -21,7 +21,8 @@
 package de.tk.opensource.secon;
 
 /**
- * Zeigt an, dass das für die Überprüfung einer digitalen Signatur benötigte Zertifikat nicht gefunden werden konnte.
+ * Zeigt an, dass ein Zertifikat nicht gefunden werden kann.
+ * Zertifikate werden benötigt um digitale Signaturen zu überprüfen und Daten zu verschlüsseln.
  * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
  * @author Christian Schlichtherle
@@ -29,6 +30,9 @@ package de.tk.opensource.secon;
 public class CertificateNotFoundException extends SeconException {
 
     private static final long serialVersionUID = 0L;
+
+    CertificateNotFoundException() {
+    }
 
     CertificateNotFoundException(String message) {
         super(message);

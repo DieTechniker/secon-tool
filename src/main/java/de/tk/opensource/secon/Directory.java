@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 /**
- * Verzeichnisdienst für Zertifikate im SECON.
+ * Verzeichnisdienst für Zertifikate von Kommunikationsteilnehmern im SECON.
  * Dies ist eine Schnittstelle für Serviceprovider.
  *
  * @author Christian Schlichtherle
@@ -33,7 +33,7 @@ import java.util.Optional;
 public interface Directory {
 
     /**
-     * Sucht das Zertifikat für einen Kommunikationsteilnehmer, das zu dem gegebenen Selektor passt.
+     * Sucht das Zertifikat für einen Kommunikationsteilnehmer, welches zu dem gegebenen Selektor passt.
      * Dieses Zertifikat wird verwendet, um die digitalen Signaturen von Nachrichten zu überprüfen.
      */
     Optional<X509Certificate> certificate(X509CertSelector selector) throws Exception;

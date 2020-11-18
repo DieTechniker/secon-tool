@@ -28,7 +28,6 @@ application {
 dependencies {
     val junitVersion = "5.6.2"
 
-    implementation("global.namespace.fun-io:fun-io-api:2.4.0")	
     implementation("global.namespace.fun-io:fun-io-bios:2.4.0")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
 
@@ -103,7 +102,7 @@ publishing {
 			from(components["java"])
             pom {
                 name.set("secon-tool")
-                description.set("A library for secure communication in german health care and social affairs sector. Based on specifications in 'GKV Anlage 16 SECON'")
+                description.set("A library for secure communication in the German health care and social affairs sector. Based on specifications in 'GKV Anlage 16 SECON'")
                 url.set("https://github.com/DieTechniker/secon-tool")
                 licenses {
                     license {

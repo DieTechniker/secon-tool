@@ -21,26 +21,16 @@
 package de.tk.opensource.secon;
 
 /**
- * Der Basistyp für alle Ausnahmen, die von diesem API ausgelöst werden können.
+ * Zeigt an, dass ein privater Schlüssel nicht gefunden werden kann.
+ * Private Schlüssel werden benötigt um digitale Signaturen zu erstellen und Daten zu entschlüsseln.
+ * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
  * @author Christian Schlichtherle
  */
-public class SeconException extends Exception {
+public class PrivateKeyNotFoundException extends SeconException {
 
     private static final long serialVersionUID = 0L;
 
-    public SeconException() {
-    }
-
-    public SeconException(String message) {
-        super(message);
-    }
-
-    public SeconException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public SeconException(Throwable cause) {
-        super(cause);
+    PrivateKeyNotFoundException() {
     }
 }

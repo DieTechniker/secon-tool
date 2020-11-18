@@ -24,6 +24,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
@@ -48,7 +49,9 @@ final class KeyStoreIdentity implements Identity {
     public PrivateKey privateKey() throws Exception {
         final char[] pw = password.call();
         try {
-            return requireNonNull((PrivateKey) ks.getKey(alias, pw));
+            return Optional
+                    .ofNullable((PrivateKey) ks.getKey(alias, pw))
+                    .orElseThrow(PrivateKeyNotFoundException::new);
         } finally {
             Arrays.fill(pw, (char) 0);
         }
@@ -56,6 +59,8 @@ final class KeyStoreIdentity implements Identity {
 
     @Override
     public X509Certificate certificate() throws Exception {
-        return requireNonNull((X509Certificate) ks.getCertificate(alias));
+        return Optional
+                .ofNullable((X509Certificate) ks.getCertificate(alias))
+                .orElseThrow(CertificateNotFoundException::new);
     }
 }
