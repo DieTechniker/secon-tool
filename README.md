@@ -138,6 +138,6 @@ cat letter-from-alice.txt
 
 ## API
 
-Siehe [Sourcecode](src/main/java/de/tk/opensourcey/secon/SECON.java) und Javadoc der `SECON`-Klasse.
+Siehe [Sourcecode](src/main/java/de/tk/opensource/secon/SECON.java) und Javadoc der `SECON`-Klasse.
 
 [Anlage - 16 Security Schnittstelle (SECON)]: https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16.pdf
