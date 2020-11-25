@@ -21,9 +21,9 @@
 package de.tk.opensource.secon;
 
 /**
- * Zeigt an, dass das im SECON-Kontext {@linkplain DefaultSubscriber#certificate() konfigurierte Zertifikat} zu keinem
- * der vorgesehenen Empfänger einer verschlüsselten Nachricht passt und die Nachricht daher nicht entschlüsselt werden
- * kann. Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
+ * Zeigt an, dass das {@linkplain Identity#certificate() konfigurierte Zertifikat} zu keinem der vorgesehenen Empfänger
+ * einer verschlüsselten Nachricht passt und die Nachricht daher nicht entschlüsselt werden kann.
+ * Eine Instanziierung dieser Klasse außerhalb dieses Pakets ist nicht möglich.
  *
  * @author  Christian Schlichtherle
  */
@@ -34,4 +34,3 @@ public class CertificateMismatchException extends SeconException {
 	CertificateMismatchException() {
 	}
 }
-

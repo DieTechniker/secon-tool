@@ -138,8 +138,8 @@ final class DefaultSubscriber implements Subscriber {
 	}
 
 	private OutputStream sign(final OutputStream out) throws Exception {
-		final X509Certificate cert = certificate();
-		final PrivateKey key = privateKey();
+		final PrivateKey key = privateKey(); // may throw `PrivateKeyNotFoundException`
+		final X509Certificate cert = certificate(); // may throw `CertificateNotFoundException`
 		final ASN1ObjectIdentifier sigAlgOID = new ASN1ObjectIdentifier(cert.getSigAlgOID());
 		final ContentSigner signer;
 		if (PKCSObjectIdentifiers.id_RSASSA_PSS.equals(sigAlgOID)) {
@@ -217,8 +217,7 @@ final class DefaultSubscriber implements Subscriber {
 		throws Exception
 	{
 		final CMSEnvelopedDataStreamGenerator gen = new CMSEnvelopedDataStreamGenerator();
-		Arrays.stream(recipients).map(RecipientInfoGeneratorFactory::create).forEach(info -> gen.addRecipientInfoGenerator(info));
-
+		Arrays.stream(recipients).map(RecipientInfoGeneratorFactory::create).forEach(gen::addRecipientInfoGenerator);
 		final OutputEncryptor encryptor =
 			new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC)
 				.setProvider(PROVIDER_NAME)
@@ -231,8 +230,8 @@ final class DefaultSubscriber implements Subscriber {
 	}
 
 	private InputStream decrypt(final InputStream in) throws Exception {
-		final X509Certificate cert = certificate();
-		final PrivateKey key = privateKey();
+		final PrivateKey key = privateKey(); // may throw `PrivateKeyNotFoundException`
+		final X509Certificate cert = certificate(); // may throw `CertificateNotFoundException`
 		final RecipientInformation info =
 			Optional
 				.ofNullable(
@@ -289,11 +288,6 @@ final class DefaultSubscriber implements Subscriber {
 
 	private Socket<InputStream> decryptAndVerifyFrom(Socket<InputStream> input, Verifier v) {
 		return input.map(verify(v).compose(decrypt));
-	}
-
-	@Override
-	public SeconCallable<InputStream> decryptAndVerifyFrom(Callable<InputStream> input) {
-		return callable(decryptAndVerifyFrom(socket(input), Verifier.NULL));
 	}
 
 	@Override

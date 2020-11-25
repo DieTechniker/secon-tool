@@ -157,8 +157,8 @@ public final class SECON {
     }
 
     /**
-     * Erzeugt eine Identität für einen Kommunikationsteilnehmer im SECON, welche durch einen privaten Schlüssel und das
-     * dazugehörige Zertifikat gekennzeichnet ist.
+     * Erzeugt eine Identität für einen Kommunikationsteilnehmer im SECON mittels eines privaten Schlüssels und des
+     * dazugehörigen Zertifikats.
      * Der Schlüssel und das Zertifikat werden aus dem gegebenen Schlüsselbund unter Verwendung des gegebenen
      * Aliasnamens mit dem gegebenen Passwort geladen.
      */
@@ -167,7 +167,7 @@ public final class SECON {
     }
 
     /**
-     * Erzeugt einen Verzeichnisdienst für Zertifikate im SECON.
+     * Erzeugt einen Verzeichnisdienst für Zertifikate von Kommunikationsteilnehmern im SECON.
      * Die Zertifikate werden aus dem gegebenen Schlüsselbund geladen.
      */
     public static Directory directory(KeyStore ks) {
@@ -175,10 +175,10 @@ public final class SECON {
     }
 
     /**
-     * Erzeugt einen Verzeichnisdienst für Zertifikate im SECON.
+     * Erzeugt einen Verzeichnisdienst für Zertifikate von Kommunikationsteilnehmern im SECON.
      * Die Zertifikate werden aus einem LDAP-Server unter Verwendung des gegebenen Verbindungspools geladen.
      * <p>
-     * Das Schema des LDAP-Servers muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
+     * Das Schema des Directory Information Tree muss Kapitel 4.6.2 "LDAP-Verzeichnis" der
      * <a href="https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16_-_Security-Schnittstelle.pdf">Security-Schnittstelle (SECON) - Anlage 16</a>
      * entsprechen.
      *
@@ -217,8 +217,8 @@ public final class SECON {
     }
 
     /**
-     * Erzeugt einen Kommunikationsteilnehmer unter Verwendung der gegebenen Identität und der geordneten Liste von
-     * Verzeichnisdiensten für Zertifikate im SECON.
+     * Erzeugt einen Kommunikationsteilnehmer im SECON unter Verwendung der gegebenen Identität und der geordneten Liste
+     * von Verzeichnisdiensten für Zertifikate.
      */
     public static Subscriber subscriber(
             final Identity identity,
