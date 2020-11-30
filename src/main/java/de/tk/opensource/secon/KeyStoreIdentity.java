@@ -22,12 +22,13 @@ package de.tk.opensource.secon;
 
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-
-import static java.util.Objects.requireNonNull;
+import java.util.stream.Stream;
 
 /**
  * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
@@ -62,5 +63,36 @@ final class KeyStoreIdentity implements Identity {
         return Optional
                 .ofNullable((X509Certificate) ks.getCertificate(alias))
                 .orElseThrow(CertificateNotFoundException::new);
+    }
+
+    @Override
+    public final Optional<PrivateKey> privateKey(X509CertSelector selector) throws Exception {
+        return Collections
+                .list(ks.aliases())
+                .stream()
+                .flatMap(this::privateKeyEntryStream)
+                .filter(entry -> selector.match(entry.getCertificate()))
+                .map(KeyStore.PrivateKeyEntry::getPrivateKey)
+                .findFirst();
+    }
+
+    private Stream<KeyStore.PrivateKeyEntry> privateKeyEntryStream(final String alias) {
+        try {
+            if (ks.isKeyEntry(alias)) {
+                final KeyStore.Entry entry;
+                final char[] pw = password.call();
+                try {
+                    entry = ks.getEntry(alias, new KeyStore.PasswordProtection(pw));
+                } finally {
+                    Arrays.fill(pw, (char) 0);
+                }
+                if (entry instanceof KeyStore.PrivateKeyEntry) {
+                    return Stream.of((KeyStore.PrivateKeyEntry) entry);
+                }
+            }
+            return Stream.empty();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot get keystore entry with alias `" + alias + "`:", e);
+        }
     }
 }

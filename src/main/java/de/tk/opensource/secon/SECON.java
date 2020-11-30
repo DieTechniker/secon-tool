@@ -161,6 +161,9 @@ public final class SECON {
      * dazugehörigen Zertifikats.
      * Der Schlüssel und das Zertifikat werden aus dem gegebenen Schlüsselbund unter Verwendung des gegebenen
      * Aliasnamens mit dem gegebenen Passwort geladen.
+     * <p>
+     * Beim Entschlüsseln von Nachrichten wird der Schlüsselbund nach passenden privaten Schlüsseln durchsucht.
+     * Das gegebene Passwort muss daher zu <em>allen</em> privaten Schlüsseln im Schlüsselbund passen.
      */
     public static Identity identity(KeyStore ks, String alias, Callable<char[]> password) {
         return new KeyStoreIdentity(requireNonNull(ks), requireNonNull(alias), requireNonNull(password));

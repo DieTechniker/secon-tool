@@ -21,7 +21,9 @@
 package de.tk.opensource.secon;
 
 import java.security.PrivateKey;
+import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
+import java.util.Optional;
 
 /**
  * Identifiziert einen Kommunikationsteilnehmer im SECON mittels eines privaten Schlüssels und des dazugehörigen
@@ -33,9 +35,18 @@ import java.security.cert.X509Certificate;
 public interface Identity {
 
     /**
+     * Sucht den privaten Schlüssel für einen Kommunikationsteilnehmer, welcher zu dem gegebenen Selektor passt.
+     * Dieser Schlüssel wird verwendet, um Nachrichten zu entschlüsseln.
+     *
+     * @since 1.1.0
+     */
+    default Optional<PrivateKey> privateKey(X509CertSelector selector) throws Exception {
+        return selector.match(certificate()) ? Optional.of(privateKey()) : Optional.empty();
+    }
+
+    /**
      * Gibt den privaten Schlüssel für diesen Kommunikationsteilnehmer zurück.
-     * Der private Schlüssel wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um
-     * verschlüsselte Nachrichten zu entschlüsseln.
+     * Dieser Schlüssel wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen.
      *
      * @throws PrivateKeyNotFoundException falls der private Schlüssel nicht gefunden werden kann.
      * @throws Exception in allen anderen Fehlerfällen, z.B. wenn ein KeyStore nicht geladen werden kann.
@@ -44,8 +55,7 @@ public interface Identity {
 
     /**
      * Gibt das Zertifikat für diesen Kommunikationsteilnehmer zurück.
-     * Das Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen und um verschlüsselte
-     * Nachrichten zu entschlüsseln.
+     * Dieses Zertifikat wird verwendet um Nachrichten mit einer digitalen Signatur zu versehen.
      *
      * @throws CertificateNotFoundException falls das Zertifikat nicht gefunden werden kann.
      * @throws Exception in allen anderen Fehlerfällen, z.B. wenn ein KeyStore nicht geladen werden kann.
