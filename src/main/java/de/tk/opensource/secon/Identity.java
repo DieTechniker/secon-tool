@@ -36,7 +36,7 @@ public interface Identity {
 
     /**
      * Sucht den privaten Schlüssel für einen Kommunikationsteilnehmer, welcher zu dem gegebenen Selektor passt.
-     * Dieser Schlüssel wird verwendet, um Nachrichten zu entschlüsseln.
+     * Dieser Schlüssel wird verwendet, um verschlüsselte Nachrichten zu entschlüsseln.
      *
      * @since 1.1.0
      */
