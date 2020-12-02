@@ -35,16 +35,16 @@ import java.util.stream.Stream;
  */
 final class KeyStoreDirectory implements Directory {
 
-    private final KeyStore keyStore;
+    private final KeyStore ks;
 
-    KeyStoreDirectory(final KeyStore keyStore) {
-        this.keyStore = keyStore;
+    KeyStoreDirectory(final KeyStore ks) {
+        this.ks = ks;
     }
 
     @Override
     public final Optional<X509Certificate> certificate(X509CertSelector selector) throws KeyStoreException {
         return Collections
-                .list(keyStore.aliases())
+                .list(ks.aliases())
                 .stream()
                 .flatMap(this::certificateStream)
                 .filter(selector::match)
@@ -61,7 +61,7 @@ final class KeyStoreDirectory implements Directory {
 
     @Override
     public final Optional<X509Certificate> certificate(final String identifier) throws KeyStoreException {
-        final Certificate cert = keyStore.getCertificate(identifier);
+        final Certificate cert = ks.getCertificate(identifier);
         return cert instanceof X509Certificate ? Optional.of((X509Certificate) cert) : Optional.empty();
     }
 }
