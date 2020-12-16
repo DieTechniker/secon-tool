@@ -55,7 +55,7 @@ final class LdapDirectory implements Directory {
         final String base = String.format("cn=%06X,%s", selector.getSerialNumber(), selector.getIssuerAsString());
         final List<X509Certificate> result = new ArrayList<>();
         pool.accept(visitor -> {
-            for (byte[] bytes : visitor.<byte[]>search(base, "objectClass=pkiUser", OBJECT_SCOPE, "userCertificate;binary")) {
+            for (byte[] bytes : visitor.search(base, "objectClass=pkiUser", OBJECT_SCOPE, byte[].class, "userCertificate;binary")) {
                 final X509Certificate cert = certificate(bytes);
                 if (selector.match(cert)) {
                     result.add(cert);
@@ -72,8 +72,8 @@ final class LdapDirectory implements Directory {
                 : "ou=BN" + identifier + ",o=AG,c=DE";
         final List<X509Certificate> result = new ArrayList<>();
         pool.accept(visitor -> {
-            for (final String dn : visitor.<String>search(base, "objectClass=*", ONELEVEL_SCOPE, "seeAlso")) {
-                for (byte[] bytes : visitor.<byte[]>search(dn, "objectClass=pkiUser", OBJECT_SCOPE, "userCertificate;binary")) {
+            for (final String dn : visitor.search(base, "objectClass=*", ONELEVEL_SCOPE, String.class, "seeAlso")) {
+                for (byte[] bytes : visitor.search(dn, "objectClass=pkiUser", OBJECT_SCOPE, byte[].class, "userCertificate;binary")) {
                     result.add(certificate(bytes));
                 }
             }
