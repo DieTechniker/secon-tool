@@ -23,8 +23,6 @@ package de.tk.opensource.secon;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import de.tk.opensource.secon.Directory;
-
 import java.math.BigInteger;
 import java.net.URI;
 import java.security.MessageDigest;
@@ -32,7 +30,7 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
-import static de.tk.opensource.secon.SECON.*;
+import static de.tk.opensource.secon.SECON.directory;
 import static java.lang.Character.toUpperCase;
 import static java.util.Locale.ENGLISH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,9 +44,9 @@ public class LdapDirectoryTest {
     @Test
     void BITMARCK_Service_GmbH() throws Exception {
         assertCertificate(
-                "8a:99:51:df:75:c6:56:bc:1a:f4:da:ca:c7:7b:e2:fb:fc:3f:17:a2",
+                "62:2a:7c:50:98:95:f6:cd:9d:75:85:83:16:d2:e6:a2:24:a3:1f:1b",
                 "104027544",
-                "30d64",
+                "27c3b",
                 "o=itsg trustcenter fuer sonstige leistungserbringer, c=de"
         );
     }
@@ -79,14 +77,22 @@ public class LdapDirectoryTest {
             final String serial,
             final String issuerDN
     ) throws Exception {
-        assertIdentifier(sha1sum, identifier);
+        assertIdentifier(sha1sum, identifier, serial, issuerDN);
         assertSelector(sha1sum, serial, issuerDN);
     }
 
-    private void assertIdentifier(final String sha1sum, final String identifier) throws Exception {
-        final Optional<X509Certificate> cert = dir.certificate(identifier);
-        assertTrue(cert.isPresent());
-        assertEquals(sha1sum.toUpperCase(ENGLISH), fingerprint(cert.get()));
+    private void assertIdentifier(
+            final String sha1sum,
+            final String identifier,
+            final String serial,
+            final String issuerDN
+    ) throws Exception {
+        final Optional<X509Certificate> maybeCert = dir.certificate(identifier);
+        assertTrue(maybeCert.isPresent());
+        final X509Certificate cert = maybeCert.get();
+        assertEquals(sha1sum.toUpperCase(ENGLISH), fingerprint(cert));
+        assertEquals(serial, cert.getSerialNumber().toString(16));
+        assertEquals(issuerDN.toUpperCase(ENGLISH), cert.getIssuerDN().toString().toUpperCase(ENGLISH));
     }
 
     private void assertSelector(final String sha1sum, final String serial, final String issuerDN) throws Exception {
