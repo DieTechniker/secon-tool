@@ -44,61 +44,71 @@ public class LdapDirectoryTest {
     @Test
     void BITMARCK_Service_GmbH() throws Exception {
         assertCertificate(
-                "62:2a:7c:50:98:95:f6:cd:9d:75:85:83:16:d2:e6:a2:24:a3:1f:1b",
                 "104027544",
+                "o=itsg trustcenter fuer sonstige leistungserbringer, c=de",
                 "27c3b",
-                "o=itsg trustcenter fuer sonstige leistungserbringer, c=de"
+                "62:2a:7c:50:98:95:f6:cd:9d:75:85:83:16:d2:e6:a2:24:a3:1f:1b"
         );
     }
 
     @Test
     void HV_Postbeamtenkrankenkasse() throws Exception {
         assertCertificate(
-                "16:31:17:98:b5:c2:89:7e:71:12:f4:aa:64:48:f0:fa:e7:7e:b3:59",
                 "103600182",
+                "o=itsg trustcenter fuer sonstige leistungserbringer, c=de",
                 "325d8",
-                "o=itsg trustcenter fuer sonstige leistungserbringer, c=de"
+                "16:31:17:98:b5:c2:89:7e:71:12:f4:aa:64:48:f0:fa:e7:7e:b3:59"
         );
     }
 
     @Test
     void Techniker_Krankenkasse() throws Exception {
         assertCertificate(
-                "c7:5c:aa:44:f1:9a:16:a5:c4:5d:22:94:45:ba:ba:8b:e7:fd:dc:d1",
                 "99301342",
+                "o=itsg trustcenter fuer arbeitgeber, c=de",
                 "f644b",
-                "o=itsg trustcenter fuer arbeitgeber, c=de"
+                "c7:5c:aa:44:f1:9a:16:a5:c4:5d:22:94:45:ba:ba:8b:e7:fd:dc:d1"
+        );
+    }
+
+    @Test
+    void TERANET_Software_GmbH() throws Exception {
+        assertCertificate(
+                "591106931",
+                "o=itsg trustcenter fuer sonstige leistungserbringer, c=de",
+                "33b09",
+                "5d:91:4b:e6:2f:fa:19:01:be:b3:e7:47:a5:dd:e6:33:ae:0d:1e:fc"
         );
     }
 
     private void assertCertificate(
-            final String sha1sum,
             final String identifier,
+            final String issuerDN,
             final String serial,
-            final String issuerDN
+            final String sha1sum
     ) throws Exception {
-        assertIdentifier(sha1sum, identifier, serial, issuerDN);
-        assertSelector(sha1sum, serial, issuerDN);
+        assertIdentifier(identifier, issuerDN, serial, sha1sum);
+        assertSelector(issuerDN, serial, sha1sum);
     }
 
     private void assertIdentifier(
-            final String sha1sum,
             final String identifier,
+            final String issuerDN,
             final String serial,
-            final String issuerDN
+            final String sha1sum
     ) throws Exception {
         final Optional<X509Certificate> maybeCert = dir.certificate(identifier);
         assertTrue(maybeCert.isPresent());
         final X509Certificate cert = maybeCert.get();
-        assertEquals(sha1sum.toUpperCase(ENGLISH), fingerprint(cert));
-        assertEquals(serial, cert.getSerialNumber().toString(16));
         assertEquals(issuerDN.toUpperCase(ENGLISH), cert.getIssuerDN().toString().toUpperCase(ENGLISH));
+        assertEquals(serial, cert.getSerialNumber().toString(16));
+        assertEquals(sha1sum.toUpperCase(ENGLISH), fingerprint(cert));
     }
 
-    private void assertSelector(final String sha1sum, final String serial, final String issuerDN) throws Exception {
+    private void assertSelector(final String issuerDN, final String serial, final String sha1sum) throws Exception {
         final X509CertSelector sel = new X509CertSelector();
-        sel.setSerialNumber(new BigInteger(serial, 16));
         sel.setIssuer(issuerDN);
+        sel.setSerialNumber(new BigInteger(serial, 16));
         final Optional<X509Certificate> cert = dir.certificate(sel);
         assertTrue(cert.isPresent());
         assertEquals(sha1sum.toUpperCase(ENGLISH), fingerprint(cert.get()));
