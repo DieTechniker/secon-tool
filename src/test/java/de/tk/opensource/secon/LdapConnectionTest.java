@@ -25,15 +25,19 @@ import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.function.Function;
 
 import static de.tk.opensource.secon.SECON.directory;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.requireNonNull;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static reactor.core.scheduler.Schedulers.newParallel;
 
 @Tag("LDAP")
 public class LdapConnectionTest {
+
+    private static final Duration timeout = Duration.ofSeconds(3);
 
     // See https://kkv.gkv-diga.de as of December 17th, 2020, plus non-existing 999_999_999:
     private static final Flux<String> ids = Flux.just(
@@ -49,12 +53,18 @@ public class LdapConnectionTest {
 
     @Test
     void sequentialCertCount() {
-        StepVerifier.create(countCertsSequential()).expectNextCount(1).verifyComplete();
+        assertTimeoutPreemptively(
+                timeout,
+                () -> StepVerifier.create(countCertsSequential()).expectNextCount(1).verifyComplete()
+        );
     }
 
     @Test
     void parallelCertCount() {
-        StepVerifier.create(countCertsParallel()).expectNextCount(1).verifyComplete();
+        assertTimeoutPreemptively(
+                timeout,
+                () -> StepVerifier.create(countCertsParallel()).expectNextCount(1).verifyComplete()
+        );
     }
 
     private Mono<Long> countCertsSequential() {
