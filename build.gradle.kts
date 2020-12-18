@@ -31,6 +31,8 @@ dependencies {
     implementation("global.namespace.fun-io:fun-io-bios:2.4.0")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
 
+    testImplementation(platform("io.projectreactor:reactor-bom:2020.0.2"))
+    testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
