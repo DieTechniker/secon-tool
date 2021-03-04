@@ -216,7 +216,12 @@ final class DefaultSubscriber implements Subscriber {
 	}
 
     private InputStream decrypt(final InputStream in) throws Exception {
-        for (final RecipientInformation info : new CMSEnvelopedDataParser(new BufferedInputStream(in))
+        CMSEnvelopedDataParser cmsEDP = new CMSEnvelopedDataParser(new BufferedInputStream(in));
+        if(!cmsEDP.getEncryptionAlgOID().equals(CMSAlgorithm.AES256_CBC.getId())) {
+        	throw new EncryptionAlgorithmIllegalException(CMSAlgorithm.AES256_CBC.getId(), cmsEDP.getEncryptionAlgOID());
+        }
+        
+		for (final RecipientInformation info : cmsEDP
                 .getRecipientInfos()) {
             final RecipientId id = info.getRID();
             if (id instanceof KeyTransRecipientId) {
