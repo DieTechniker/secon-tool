@@ -138,6 +138,8 @@ cat letter-from-alice.txt
 
 ## API
 
+[API-Tutorial](https://github.com/DieTechniker/secon-tool/wiki/Getting-started) mit Code-Beispielen im Wiki
+
 Siehe [Sourcecode](src/main/java/de/tk/opensource/secon/SECON.java) und Javadoc der `SECON`-Klasse.
 
 [Anlage - 16 Security Schnittstelle (SECON)]: https://www.gkv-datenaustausch.de/media/dokumente/standards_und_normen/technische_spezifikationen/Anlage_16.pdf

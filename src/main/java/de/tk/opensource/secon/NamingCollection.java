@@ -22,6 +22,7 @@ package de.tk.opensource.secon;
 
 import global.namespace.fun.io.api.function.XConsumer;
 
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import java.util.concurrent.Callable;
 
@@ -38,7 +39,12 @@ interface NamingCollection<T> {
     NamingEnumeration<T> newEnumeration() throws Exception;
 
     default void forEach(final XConsumer<T> consumer) throws Exception {
-        final NamingEnumeration<T> e = newEnumeration();
+        final NamingEnumeration<T> e;
+        try {
+            e = newEnumeration();
+        } catch (NameNotFoundException ignored) {
+            return;
+        }
         SideEffect.runAll(
                 () -> {
                     while (e.hasMore()) {
