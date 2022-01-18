@@ -42,9 +42,9 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("com.github.johnrengelman.shadow") version "6.0.0"
-    id("biz.aQute.bnd.builder") version "5.1.2"
-    id("net.minecrell.licenser") version "0.4.1"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("biz.aQute.bnd.builder") version "6.1.0"
+    id("org.cadixdev.licenser") version "0.6.1"
 }
 
 repositories {
@@ -93,9 +93,9 @@ tasks.register<Test>("testLdap") {
 }
 
 license {
-	header = project.file("LICENSE.header")
+	header(project.file("LICENSE.header"))
 	include("**/*.java,**/*.kts")
-	newLine = false
+	newLine.set(false)
 }
 
 publishing {
