@@ -20,8 +20,10 @@
  */
 package de.tk.opensource.secon;
 
-import global.namespace.fun.io.api.Socket;
-import global.namespace.fun.io.api.function.XFunction;
+import static de.tk.opensource.secon.SECON.callable;
+import static de.tk.opensource.secon.SECON.socket;
+import static java.util.Objects.requireNonNull;
+import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
 import java.io.BufferedInputStream;
 import java.io.FilterInputStream;
@@ -34,7 +36,6 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -43,13 +44,9 @@ import javax.security.auth.x500.X500Principal;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
-import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedDataParser;
 import org.bouncycastle.cms.CMSSignedDataStreamGenerator;
 import org.bouncycastle.cms.CMSTypedStream;
@@ -64,23 +61,18 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.bouncycastle.util.Store;
 
-import static java.util.Objects.*;
-
-import static org.bouncycastle.jce.provider.BouncyCastleProvider.*;
-
-import static de.tk.opensource.secon.SECON.*;
+import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.api.function.XFunction;
 
 /**
  * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
  * @author  Christian Schlichtherle
  */
-final class DefaultSubscriber implements Subscriber {
+final class DefaultSubscriberEncBadAlgo implements Subscriber {
 
 	private volatile PrivateKey privateKey;
 	private volatile X509Certificate certificate;
@@ -88,7 +80,7 @@ final class DefaultSubscriber implements Subscriber {
 	private final Identity identity;
 	private final Directory[] directories;
 
-	DefaultSubscriber(final Identity identity, final Directory[] directories) {
+	DefaultSubscriberEncBadAlgo(final Identity identity, final Directory[] directories) {
 		this.identity = identity;
 		this.directories = directories;
 	}
@@ -174,10 +166,6 @@ final class DefaultSubscriber implements Subscriber {
 					.build()
 			).build(signer, cert)
 		);
-
-		// add signer certificate to message
-		gen.addCertificate(new JcaX509CertificateHolder(cert));
-
 		return gen.open(out, true);
 	}
 
@@ -208,36 +196,18 @@ final class DefaultSubscriber implements Subscriber {
 					}
 				}
 
-				@SuppressWarnings("unchecked")
 				private void verify() throws Exception {
-					Store<X509CertificateHolder> certificates = parser.getCertificates();
-
 					for (final SignerInformation info : parser.getSignerInfos()) {
-
-						Collection<X509CertificateHolder> certCollection = certificates.getMatches(info.getSID());
-						if (!certCollection.isEmpty()) {
-							for (X509CertificateHolder certHolder : certCollection) {
-								X509Certificate cert = new JcaX509CertificateConverter().getCertificate(certHolder);
-								doVerify(verifier, info, cert);
-							}
-						} else {
-							final X509Certificate cert = certificate(info.getSID());
-							doVerify(verifier, info, cert);
+						final X509Certificate cert = certificate(info.getSID());
+						final SignerInformationVerifier ver =
+							new JcaSimpleSignerInfoVerifierBuilder()
+								.setProvider(PROVIDER_NAME)
+								.build(cert);
+						if (!info.verify(ver)) {
+							throw new InvalidSignatureException();
 						}
+						verifier.verify(cert);
 					}
-				}
-
-				private void doVerify(final Verifier verifier, final SignerInformation info, final X509Certificate cert)
-					throws OperatorCreationException, CMSException, InvalidSignatureException, Exception
-				{
-					final SignerInformationVerifier ver =
-						new JcaSimpleSignerInfoVerifierBuilder()
-							.setProvider(PROVIDER_NAME)
-							.build(cert);
-					if (!info.verify(ver)) {
-						throw new InvalidSignatureException();
-					}
-					verifier.verify(cert);
 				}
 			};
 	}
@@ -252,7 +222,7 @@ final class DefaultSubscriber implements Subscriber {
 		final CMSEnvelopedDataStreamGenerator gen = new CMSEnvelopedDataStreamGenerator();
 		Arrays.stream(recipients).map(RecipientInfoGeneratorFactory::create).forEach(gen::addRecipientInfoGenerator);
 		final OutputEncryptor encryptor =
-			new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC)
+			new JceCMSContentEncryptorBuilder(CMSAlgorithm.DES_CBC)
 				.setProvider(PROVIDER_NAME)
 				.build();
 		return gen.open(out, encryptor);
@@ -262,13 +232,8 @@ final class DefaultSubscriber implements Subscriber {
 		return Streams.fixOutputstreamClose(out -> encrypt(out, recipients));
 	}
 
-  private InputStream decrypt(final InputStream in) throws Exception {
-    CMSEnvelopedDataParser cmsEDP = new CMSEnvelopedDataParser(new BufferedInputStream(in));
-    if(!cmsEDP.getEncryptionAlgOID().equals(CMSAlgorithm.AES256_CBC.getId())) {
-     	throw new EncryptionAlgorithmIllegalException(CMSAlgorithm.AES256_CBC.getId(), cmsEDP.getEncryptionAlgOID());
-    }
-        
-		for (final RecipientInformation info : cmsEDP
+    private InputStream decrypt(final InputStream in) throws Exception {
+        for (final RecipientInformation info : new CMSEnvelopedDataParser(new BufferedInputStream(in))
                 .getRecipientInfos()) {
             final RecipientId id = info.getRID();
             if (id instanceof KeyTransRecipientId) {
@@ -281,9 +246,9 @@ final class DefaultSubscriber implements Subscriber {
                             .getContentStream();
                 }
             }
+        }
+        throw new CertificateMismatchException();
     }
-    throw new CertificateMismatchException();
-  }
 
 	private final XFunction<InputStream, InputStream> decrypt = Streams.fixInputstreamClose(this::decrypt);
 
@@ -334,4 +299,3 @@ final class DefaultSubscriber implements Subscriber {
 		return callable(decryptAndVerifyFrom(socket(input), v));
 	}
 }
-
