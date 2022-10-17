@@ -19,7 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 group = "de.tk.opensource"
-version = "1.1.1-SNAPSHOT"
+version = "1.2.0-SNAPSHOT"
 
 application {
     mainClassName = "de.tk.opensource.secon.Main"
@@ -29,7 +29,7 @@ dependencies {
     val junitVersion = "5.6.2"
 
     implementation("global.namespace.fun-io:fun-io-bios:2.4.0")
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
 
     testImplementation(platform("io.projectreactor:reactor-bom:2020.0.2"))
     testImplementation("io.projectreactor:reactor-test")
@@ -42,9 +42,9 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("com.github.johnrengelman.shadow") version "6.0.0"
-    id("biz.aQute.bnd.builder") version "5.1.2"
-    id("net.minecrell.licenser") version "0.4.1"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("biz.aQute.bnd.builder") version "6.1.0"
+    id("org.cadixdev.licenser") version "0.6.1"
 }
 
 repositories {
@@ -93,9 +93,9 @@ tasks.register<Test>("testLdap") {
 }
 
 license {
-	header = project.file("LICENSE.header")
+	header(project.file("LICENSE.header"))
 	include("**/*.java,**/*.kts")
-	newLine = false
+	newLine.set(false)
 }
 
 publishing {
