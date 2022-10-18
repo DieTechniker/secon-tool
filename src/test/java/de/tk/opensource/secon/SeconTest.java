@@ -30,6 +30,7 @@ import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.Callable;
 
+import org.bouncycastle.cms.CMSAlgorithm;
 import org.junit.jupiter.api.Test;
 
 import de.tk.opensource.secon.Directory;
@@ -39,7 +40,7 @@ import de.tk.opensource.secon.Subscriber;
 
 import static de.tk.opensource.secon.SECON.*;
 import static global.namespace.fun.io.bios.BIOS.*;
-
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -129,7 +130,8 @@ public class SeconTest {
 		Identity recipientId = identity(ks, "alice_rsa_256", pw);
 		Directory directory = directory(ks);
 
-		final Subscriber senderSub = SECONEncBadAlgo.subscriber(senderId,directory);
+		final Subscriber senderSub = new DefaultSubscriber(senderId,new Directory[] {directory}, CMSAlgorithm.DES_CBC);
+		
 		final Subscriber recipientSub = subscriber(recipientId, directory);
 		final X509Certificate recipientCert = recipientId.certificate();
 		final Store plain = memory(), cipher = memory(), clone = memory();

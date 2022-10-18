@@ -35,6 +35,7 @@ import javax.naming.Context;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
+import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import global.namespace.fun.io.api.Socket;
@@ -233,7 +234,7 @@ public final class SECON {
             final Directory other = others[i];
             directories[++i] = requireNonNull(other);
         }
-        return new DefaultSubscriber(requireNonNull(identity), directories);
+        return new DefaultSubscriber(requireNonNull(identity), directories, CMSAlgorithm.AES256_CBC);
     }
 
     /**

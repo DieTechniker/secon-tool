@@ -20,8 +20,11 @@
  */
 package de.tk.opensource.secon;
 
-import global.namespace.fun.io.api.Socket;
-import global.namespace.fun.io.api.function.XFunction;
+import static de.tk.opensource.secon.SECON.callable;
+import static de.tk.opensource.secon.SECON.socket;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
 import java.io.BufferedInputStream;
 import java.io.FilterInputStream;
@@ -70,11 +73,8 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
 
-import static java.util.Objects.*;
-
-import static org.bouncycastle.jce.provider.BouncyCastleProvider.*;
-
-import static de.tk.opensource.secon.SECON.*;
+import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.api.function.XFunction;
 
 /**
  * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
@@ -87,12 +87,16 @@ final class DefaultSubscriber implements Subscriber {
 
 	private final Identity identity;
 	private final Directory[] directories;
+	private final ASN1ObjectIdentifier encryptionAlgorithm;
 
-	DefaultSubscriber(final Identity identity, final Directory[] directories) {
+	DefaultSubscriber(Identity identity, Directory[] directories, ASN1ObjectIdentifier encryptionAlgorithm) {
+		super();
+		nonNull(encryptionAlgorithm);
 		this.identity = identity;
 		this.directories = directories;
+		this.encryptionAlgorithm = encryptionAlgorithm;
 	}
-
+	
 	private PrivateKey privateKey() throws Exception {
 		final PrivateKey k = this.privateKey;
 		return null != k ? k : (this.privateKey = identity.privateKey());
@@ -252,7 +256,7 @@ final class DefaultSubscriber implements Subscriber {
 		final CMSEnvelopedDataStreamGenerator gen = new CMSEnvelopedDataStreamGenerator();
 		Arrays.stream(recipients).map(RecipientInfoGeneratorFactory::create).forEach(gen::addRecipientInfoGenerator);
 		final OutputEncryptor encryptor =
-			new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC)
+			new JceCMSContentEncryptorBuilder(encryptionAlgorithm)
 				.setProvider(PROVIDER_NAME)
 				.build();
 		return gen.open(out, encryptor);
@@ -264,8 +268,8 @@ final class DefaultSubscriber implements Subscriber {
 
   private InputStream decrypt(final InputStream in) throws Exception {
     CMSEnvelopedDataParser cmsEDP = new CMSEnvelopedDataParser(new BufferedInputStream(in));
-    if(!cmsEDP.getEncryptionAlgOID().equals(CMSAlgorithm.AES256_CBC.getId())) {
-     	throw new EncryptionAlgorithmIllegalException(CMSAlgorithm.AES256_CBC.getId(), cmsEDP.getEncryptionAlgOID());
+    if(!cmsEDP.getEncryptionAlgOID().equals(encryptionAlgorithm.getId())) {
+     	throw new EncryptionAlgorithmIllegalException(encryptionAlgorithm.getId(), cmsEDP.getEncryptionAlgOID());
     }
         
 		for (final RecipientInformation info : cmsEDP
