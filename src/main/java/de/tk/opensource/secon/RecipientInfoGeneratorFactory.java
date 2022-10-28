@@ -33,7 +33,7 @@ import static org.bouncycastle.jce.provider.BouncyCastleProvider.*;
 /**
  * Erzeugt je nach Schlüssellänge den korrekten Wrapper für den Session-Key
  *
- * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author  Wolfgang Schmiesing
  */
 public class RecipientInfoGeneratorFactory {
 

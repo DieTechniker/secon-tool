@@ -2,6 +2,7 @@ package de.tk.opensource.secon;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -23,19 +24,20 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 
-public class KeyPairIdentity implements Identity {
+class KeyPairIdentity implements Identity {
 
 	private final KeyPair pair;
 	private final X509Certificate certificate;
 
-	public KeyPairIdentity(KeyPair pair) {
+	public KeyPairIdentity(String distinguishedName, int validityDays) {
 		super();
-		this.pair = pair;
-
 		try {
-			certificate = generateCertificate("CN=John Doe", pair, 10, "SHA256WithRSAEncryption");
-		} catch (CertificateException e) {
-			throw new RuntimeException(e);
+			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+			keyPairGenerator.initialize(4096, new SecureRandom());
+			this.pair = keyPairGenerator.generateKeyPair();
+			certificate = generateCertificate(distinguishedName, pair, validityDays, "SHA256WithRSAEncryption");
+		} catch (Exception e) {
+			throw new RuntimeException("Error initializing KeyPair-Identity", e);
 		}
 	}
 
@@ -48,10 +50,10 @@ public class KeyPairIdentity implements Identity {
 	public X509Certificate certificate() throws Exception {
 		return certificate;
 	}
-	
+
 	public static X509Certificate generateCertificate(String dn, KeyPair pair, int days, String algorithm)
 			throws CertificateException {
-		
+
 		try {
 			Security.addProvider(new BouncyCastleProvider());
 			AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find(algorithm);
@@ -63,7 +65,7 @@ public class KeyPairIdentity implements Identity {
 			Date from = new Date();
 			Date to = new Date(from.getTime() + days * 86400000L);
 			BigInteger sn = new BigInteger(64, new SecureRandom());
-			
+
 			X509v1CertificateBuilder v1CertGen = new X509v1CertificateBuilder(name, sn, from, to, name, subPubKeyInfo);
 			X509CertificateHolder certificateHolder = v1CertGen.build(sigGen);
 			return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certificateHolder);

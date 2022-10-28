@@ -30,7 +30,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author Wolfgang Schmiesing
  * @author Christian Schlichtherle
  */
 final class KeyStoreDirectory implements Directory {

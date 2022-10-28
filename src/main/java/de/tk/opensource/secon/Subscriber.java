@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
  * Ein Kontextobjekt, welches einen Kommunikationsteilnehmer im SECON repräsentiert und diesem das Versenden und
  * Empfangen von Nachrichten im CMS-Format (Cryptographic Message Syntax) ermöglicht.
  *
- * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author  Wolfgang Schmiesing
  * @author  Christian Schlichtherle
  */
 public interface Subscriber {

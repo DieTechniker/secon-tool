@@ -31,7 +31,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
 /**
- * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author Wolfgang Schmiesing
  * @author Christian Schlichtherle
  */
 final class KeyStoreIdentity implements Identity {

@@ -77,7 +77,7 @@ import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XFunction;
 
 /**
- * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author  Wolfgang Schmiesing
  * @author  Christian Schlichtherle
  */
 final class DefaultSubscriber implements Subscriber {
@@ -121,25 +121,6 @@ final class DefaultSubscriber implements Subscriber {
 		sel.setSerialNumber(id.getSerialNumber());
 		sel.setSubjectKeyIdentifier(id.getSubjectKeyIdentifier());
 		return sel;
-	}
-
-	private static X509CertSelector selector(final SignerId id) {
-		final X509CertSelector sel = new X509CertSelector();
-		Optional.ofNullable(id.getIssuer()).ifPresent(issuer -> sel.setIssuer(principal(issuer)));
-		sel.setSerialNumber(id.getSerialNumber());
-		sel.setSubjectKeyIdentifier(id.getSubjectKeyIdentifier());
-		return sel;
-	}
-
-	private X509Certificate certificate(SignerId id) throws Exception {
-		final X509CertSelector selector = selector(id);
-		for (final Directory dir : directories) {
-			final Optional<X509Certificate> cert = dir.certificate(selector);
-			if (cert.isPresent()) {
-				return cert.get();
-			}
-		}
-		throw new CertificateNotFoundException(selector.toString());
 	}
 
 	private X509Certificate certificate(final String identifier) throws Exception {
@@ -194,6 +175,7 @@ final class DefaultSubscriber implements Subscriber {
 				new BufferedInputStream(in)
 			);
 		final CMSTypedStream signedContent = parser.getSignedContent();
+		final SignatureValidator signatureValidator = new SignatureValidator(verifier, directories);
 		return
 			new FilterInputStream(signedContent.getContentStream()) {
 
@@ -202,9 +184,12 @@ final class DefaultSubscriber implements Subscriber {
 					SideEffect.runAll(signedContent::drain, this::verifyIo);
 				}
 
+				@SuppressWarnings("unchecked")
 				private void verifyIo() throws IOException {
 					try {
-						verify();
+						for (final SignerInformation info : parser.getSignerInfos()) {
+							signatureValidator.verify(info, parser.getCertificates());
+						}
 					} catch (IOException | RuntimeException e) {
 						throw e;
 					} catch (Exception e) {
@@ -212,37 +197,6 @@ final class DefaultSubscriber implements Subscriber {
 					}
 				}
 
-				@SuppressWarnings("unchecked")
-				private void verify() throws Exception {
-					Store<X509CertificateHolder> certificates = parser.getCertificates();
-
-					for (final SignerInformation info : parser.getSignerInfos()) {
-
-						Collection<X509CertificateHolder> certCollection = certificates.getMatches(info.getSID());
-						if (!certCollection.isEmpty()) {
-							for (X509CertificateHolder certHolder : certCollection) {
-								X509Certificate cert = new JcaX509CertificateConverter().getCertificate(certHolder);
-								doVerify(verifier, info, cert);
-							}
-						} else {
-							final X509Certificate cert = certificate(info.getSID());
-							doVerify(verifier, info, cert);
-						}
-					}
-				}
-
-				private void doVerify(final Verifier verifier, final SignerInformation info, final X509Certificate cert)
-					throws OperatorCreationException, CMSException, InvalidSignatureException, Exception
-				{
-					final SignerInformationVerifier ver =
-						new JcaSimpleSignerInfoVerifierBuilder()
-							.setProvider(PROVIDER_NAME)
-							.build(cert);
-					if (!info.verify(ver)) {
-						throw new InvalidSignatureException();
-					}
-					verifier.verify(cert);
-				}
 			};
 	}
 

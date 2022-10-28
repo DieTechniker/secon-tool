@@ -34,7 +34,7 @@ import static javax.naming.directory.SearchControls.OBJECT_SCOPE;
 import static javax.naming.directory.SearchControls.ONELEVEL_SCOPE;
 
 /**
- * @author Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author Wolfgang Schmiesing
  * @author Christian Schlichtherle
  */
 final class LdapDirectory implements Directory {
