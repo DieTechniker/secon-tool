@@ -70,11 +70,20 @@ class SignatureValidator {
 			X509Certificate cert = new JcaX509CertificateConverter().getCertificate(certHolder);
 			Optional<X509Certificate> issuer = issuer(cert.getIssuerX500Principal());
 			if(issuer.isPresent()) {
-				doVerify(verifier, info, cert);
+				verifyIssuer(cert, issuer.get());
+				verifySignature(verifier, info, cert);
 			} else {
 				throw new CertificateNotFoundException(String.format("Issuer: %s not found for certificate: %s", cert.getIssuerX500Principal().getName(), cert.getSubjectX500Principal().getName()));
 			}
 		}
+	}
+
+	private void verifyIssuer(X509Certificate certToVerify, X509Certificate parent) throws CertificateVerificationException {
+		try {
+			certToVerify.verify(parent.getPublicKey());
+		} catch (Exception e) {
+			throw new CertificateVerificationException(String.format("Invalid issuer certificate for certificate: %s", certToVerify.getSubjectX500Principal().getName()), e);
+		}	
 	}
 
 	/**
@@ -85,10 +94,10 @@ class SignatureValidator {
 	 * @throws Exception
 	 */
 	private void verify(SignerInformation info, X509Certificate cert) throws Exception {
-		doVerify(verifier, info, cert);
+		verifySignature(verifier, info, cert);
 	}
 	
-	private void doVerify(final Verifier verifier, final SignerInformation info, final X509Certificate signerCert)
+	private void verifySignature(final Verifier verifier, final SignerInformation info, final X509Certificate signerCert)
 			throws OperatorCreationException, CMSException, InvalidSignatureException, CertificateVerificationException,
 			Exception {
 		final SignerInformationVerifier ver = new JcaSimpleSignerInfoVerifierBuilder().setProvider(PROVIDER_NAME)
@@ -121,9 +130,9 @@ class SignatureValidator {
 		return Optional.empty();
 	}
 
-	private static X509CertSelector selector(final X500Principal issuer) {
+	private static X509CertSelector selector(final X500Principal subject) {
 		final X509CertSelector sel = new X509CertSelector();
-		sel.setSubject(issuer);
+		sel.setSubject(subject);
 		return sel;
 	}
 

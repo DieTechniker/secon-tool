@@ -64,9 +64,7 @@ public class EmbeddedCertificateTest {
 
 	private X509Certificate recipientCert;
 	
-	private Store plain, cipher, clone;
-
-	private Identity senderId;	
+	private Store plain, cipher, clone;	
 
 	@BeforeEach
 	void setup() throws Exception {
@@ -95,11 +93,26 @@ public class EmbeddedCertificateTest {
 	}
 
 	@Test
-	void verify_embeddedCertificate_against_truststore() throws Exception {
+	void verify_embeddedCertificate_directly() throws Exception {
 		// sender with self-signed certificate
-		createSender(directory(keystore), new KeyPairIdentity("CN=John Doe", 10));		
-		// recipient trusts sender
-		createRecipient(directory(keystore(senderId.certificate())));
+		KeyPairIdentity id = createSender(directory(keystore), new KeyPairIdentity("CN=John Doe", 10));		
+		// recipient trusts sender's issuer certificate
+		createRecipient(directory(keystore(id.certificate())));
+		
+		// send -> receive
+		copy(input(plain), sender.signAndEncryptTo(output(cipher), recipientCert));
+        copy(recipient.decryptAndVerifyFrom(input(cipher)), output(clone));
+		
+		assertArrayEquals(plain.content(), clone.content());
+	}
+
+	
+	@Test
+	void verify_embeddedCertificate_against_trusted_issuer() throws Exception {
+		// sender with self-signed certificate
+		KeyPairIdentity senderId = createSender(directory(keystore), new KeyPairIdentity("CN=John Doe", 10));		
+		// recipient trusts sender's issuer certificate
+		createRecipient(directory(keystore(senderId.getRootCert())));
 		
 		// send -> receive
 		copy(input(plain), sender.signAndEncryptTo(output(cipher), recipientCert));
@@ -155,9 +168,9 @@ public class EmbeddedCertificateTest {
 		recipientCert = recipientId.certificate();
 	}
 
-	private void createSender(Directory directory, Identity senderId) {
-		this.senderId = senderId;
+	private <T extends Identity> T createSender(Directory directory, T senderId) {
 		sender = subscriber(senderId, directory);
+		return senderId;
 	}
 
 
