@@ -68,7 +68,7 @@ class SignatureValidator {
 		}
 		for (X509CertificateHolder certHolder : certCollection) {
 			X509Certificate cert = new JcaX509CertificateConverter().getCertificate(certHolder);
-			Optional<X509Certificate> issuer = issuer(cert.getIssuerX500Principal());
+			Optional<X509Certificate> issuer = issuer(cert);
 			if(issuer.isPresent()) {
 				verifyIssuer(cert, issuer.get());
 				verifySignature(verifier, info, cert);
@@ -119,12 +119,11 @@ class SignatureValidator {
 		return Optional.empty();
 	}
 	
-	private Optional<X509Certificate> issuer(X500Principal issuer) throws Exception {
-		final X509CertSelector selector = selector(issuer);
+	private Optional<X509Certificate> issuer(X509Certificate cert) throws Exception {
 		for (final Directory dir : directories) {
-			final Optional<X509Certificate> cert = dir.certificate(selector);
-			if (cert.isPresent()) {
-				return cert;
+			final Optional<X509Certificate> issuerCert = dir.issuer(cert);
+			if (issuerCert.isPresent()) {
+				return issuerCert;
 			}
 		}
 		return Optional.empty();

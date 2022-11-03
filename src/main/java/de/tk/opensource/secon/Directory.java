@@ -29,6 +29,7 @@ import java.util.Optional;
  * Dies ist eine Schnittstelle für Serviceprovider.
  *
  * @author Christian Schlichtherle
+ * @author Wolfgang Schmiesing
  */
 public interface Directory {
 
@@ -37,6 +38,13 @@ public interface Directory {
      * Dieses Zertifikat wird verwendet, um die digitalen Signaturen von Nachrichten zu überprüfen.
      */
     Optional<X509Certificate> certificate(X509CertSelector selector) throws Exception;
+    
+    /**
+     * Sucht den Aussteller des Zertifikats im Verzeichnis. Optional, kann implementiert werden, um den Herausgeber eines noch nicht im Verzeichnis enthaltenen Zertifikats zu finden.
+     */
+    default Optional<X509Certificate> issuer(X509Certificate cert) throws Exception {
+    	return Optional.empty();
+    }
 
     /**
      * Sucht das Zertifikat für einen Kommunikationsteilnehmer, welches zu dem gegebenen Kennzeichen passt.

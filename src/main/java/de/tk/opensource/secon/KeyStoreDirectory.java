@@ -51,6 +51,14 @@ final class KeyStoreDirectory implements Directory {
                 .findFirst();
     }
 
+    @Override
+	public Optional<X509Certificate> issuer(X509Certificate cert) throws Exception {
+    	final X509CertSelector selector = new X509CertSelector();
+    	selector.setSubject(cert.getIssuerX500Principal());
+    	
+		return certificate(selector);
+	}
+    
     private Stream<X509Certificate> certificateStream(final String alias) {
         try {
             return certificate(alias).map(Stream::of).orElseGet(Stream::empty);
