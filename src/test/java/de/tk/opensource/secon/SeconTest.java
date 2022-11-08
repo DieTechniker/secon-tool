@@ -103,7 +103,7 @@ public class SeconTest {
         {
             final CertificateVerificationException e = new CertificateVerificationException("invalid certificate");
             assertSame(e, assertThrows(SeconException.class, () -> copy(
-                    recipientSub.decryptAndVerifyFrom(input(cipher), (certs) -> {
+                    recipientSub.decryptAndVerifyFrom(input(cipher), certs -> {
                         throw e;
                     }),
                     output(clone)

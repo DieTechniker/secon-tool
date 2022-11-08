@@ -35,7 +35,7 @@ import static org.bouncycastle.jce.provider.BouncyCastleProvider.*;
  *
  * @author  Wolfgang Schmiesing
  */
-public class RecipientInfoGeneratorFactory {
+public final class RecipientInfoGeneratorFactory {
 
 	public static RecipientInfoGenerator create(Callable<X509Certificate> certCallable) {
 		try {

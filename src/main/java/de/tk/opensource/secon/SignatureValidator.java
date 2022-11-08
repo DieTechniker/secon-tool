@@ -21,7 +21,7 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Store;
 
-class SignatureValidator {
+final class SignatureValidator {
 
 	private final Verifier verifier;
 	private final Directory[] directories;
