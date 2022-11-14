@@ -44,7 +44,7 @@ import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author  Wolfgang Schmiesing
  * @author  Christian Schlichtherle
  * @author  Marcus Fey 
 */
@@ -101,9 +101,9 @@ public class SeconTest {
 
         // Simulate certificate verification failure:
         {
-            final SeconException e = new SeconException();
+            final CertificateVerificationException e = new CertificateVerificationException("invalid certificate");
             assertSame(e, assertThrows(SeconException.class, () -> copy(
-                    recipientSub.decryptAndVerifyFrom(input(cipher), cert -> {
+                    recipientSub.decryptAndVerifyFrom(input(cipher), certs -> {
                         throw e;
                     }),
                     output(clone)

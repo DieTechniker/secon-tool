@@ -30,7 +30,7 @@ import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 /**
- * @author  Wolfgang Schmiesing (P224488, IT.IN.FRW)
+ * @author  Wolfgang Schmiesing
  * @author  Christian Schlichtherle
  */
 final class KksAlgorithms {
