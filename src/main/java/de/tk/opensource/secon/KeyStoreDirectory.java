@@ -36,9 +36,16 @@ import java.util.stream.Stream;
 final class KeyStoreDirectory implements Directory {
 
 	private final KeyStore ks;
-
+	
+	private final LRUCache<X509Certificate, X509Certificate> issuerCache;
+	
 	KeyStoreDirectory(final KeyStore ks) {
+		this(ks, new LRUCache<X509Certificate, X509Certificate>(50));
+	}
+	
+	KeyStoreDirectory(final KeyStore ks, LRUCache<X509Certificate, X509Certificate> cache) {
 		this.ks = ks;
+		this.issuerCache = cache;
 	}
 
 	@Override
@@ -52,11 +59,15 @@ final class KeyStoreDirectory implements Directory {
 
 	@Override
 	public Optional<X509Certificate> issuer(X509Certificate cert) throws Exception {
+		if(issuerCache.containsKey(cert)) {
+			return issuerCache.get(cert);
+		}
+		
 		final X509CertSelector selector = new X509CertSelector();
 		selector.setSubject(cert.getIssuerX500Principal());
 
 		// find first matching issuer since principal might not be unique
-		return certificates(selector).filter(p -> {
+		Optional<X509Certificate> issuer = certificates(selector).filter(p -> {
 			try {
 				cert.verify(p.getPublicKey());
 				return true;
@@ -64,6 +75,10 @@ final class KeyStoreDirectory implements Directory {
 				return false;
 			}
 		}).findFirst();
+		if(issuer.isPresent()) {
+			issuerCache.put(cert, issuer.get());
+		}
+		return issuer;
 	}
 
 	private Stream<X509Certificate> certificateStream(final String alias) {
@@ -79,4 +94,5 @@ final class KeyStoreDirectory implements Directory {
 		final Certificate cert = ks.getCertificate(identifier);
 		return cert instanceof X509Certificate ? Optional.of((X509Certificate) cert) : Optional.empty();
 	}
+	
 }
