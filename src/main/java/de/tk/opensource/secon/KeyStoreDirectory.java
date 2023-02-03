@@ -35,41 +35,64 @@ import java.util.stream.Stream;
  */
 final class KeyStoreDirectory implements Directory {
 
-    private final KeyStore ks;
-
-    KeyStoreDirectory(final KeyStore ks) {
-        this.ks = ks;
-    }
-
-    @Override
-    public final Optional<X509Certificate> certificate(X509CertSelector selector) throws KeyStoreException {
-        return Collections
-                .list(ks.aliases())
-                .stream()
-                .flatMap(this::certificateStream)
-                .filter(selector::match)
-                .findFirst();
-    }
-
-    @Override
-	public Optional<X509Certificate> issuer(X509Certificate cert) throws Exception {
-    	final X509CertSelector selector = new X509CertSelector();
-    	selector.setSubject(cert.getIssuerX500Principal());
-    	
-		return certificate(selector);
+	private final KeyStore ks;
+	
+	private final LRUCache<X509Certificate, X509Certificate> issuerCache;
+	
+	KeyStoreDirectory(final KeyStore ks) {
+		this(ks, new LRUCache<X509Certificate, X509Certificate>(50));
 	}
-    
-    private Stream<X509Certificate> certificateStream(final String alias) {
-        try {
-            return certificate(alias).map(Stream::of).orElseGet(Stream::empty);
-        } catch (KeyStoreException e) {
-            throw new IllegalStateException("Cannot get certificate for alias `" + alias + "`:", e);
-        }
-    }
+	
+	KeyStoreDirectory(final KeyStore ks, LRUCache<X509Certificate, X509Certificate> cache) {
+		this.ks = ks;
+		this.issuerCache = cache;
+	}
 
-    @Override
-    public final Optional<X509Certificate> certificate(final String identifier) throws KeyStoreException {
-        final Certificate cert = ks.getCertificate(identifier);
-        return cert instanceof X509Certificate ? Optional.of((X509Certificate) cert) : Optional.empty();
-    }
+	@Override
+	public final Optional<X509Certificate> certificate(X509CertSelector selector) throws KeyStoreException {
+		return certificates(selector).findFirst();
+	}
+
+	private final Stream<X509Certificate> certificates(X509CertSelector selector) throws KeyStoreException {
+		return Collections.list(ks.aliases()).stream().flatMap(this::certificateStream).filter(selector::match);
+	}
+
+	@Override
+	public Optional<X509Certificate> issuer(X509Certificate cert) throws Exception {
+		if(issuerCache.containsKey(cert)) {
+			return issuerCache.get(cert);
+		}
+		
+		final X509CertSelector selector = new X509CertSelector();
+		selector.setSubject(cert.getIssuerX500Principal());
+
+		// find first matching issuer since principal might not be unique
+		Optional<X509Certificate> issuer = certificates(selector).filter(p -> {
+			try {
+				cert.verify(p.getPublicKey());
+				return true;
+			} catch (Exception e) {
+				return false;
+			}
+		}).findFirst();
+		if(issuer.isPresent()) {
+			issuerCache.put(cert, issuer.get());
+		}
+		return issuer;
+	}
+
+	private Stream<X509Certificate> certificateStream(final String alias) {
+		try {
+			return certificate(alias).map(Stream::of).orElseGet(Stream::empty);
+		} catch (KeyStoreException e) {
+			throw new IllegalStateException("Cannot get certificate for alias `" + alias + "`:", e);
+		}
+	}
+
+	@Override
+	public final Optional<X509Certificate> certificate(final String identifier) throws KeyStoreException {
+		final Certificate cert = ks.getCertificate(identifier);
+		return cert instanceof X509Certificate ? Optional.of((X509Certificate) cert) : Optional.empty();
+	}
+	
 }
