@@ -40,6 +40,7 @@ dependencies {
 plugins {
     application
     `java-library`
+    `maven-publish`
     signing
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
