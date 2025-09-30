@@ -40,8 +40,8 @@ dependencies {
 plugins {
     application
     `java-library`
-    `maven-publish`
     signing
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("biz.aQute.bnd.builder") version "6.1.0"
     id("org.cadixdev.licenser") version "0.6.1"
@@ -98,6 +98,21 @@ license {
 	newLine.set(false)
 }
 
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+    repositories {
+        // see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuration
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            username = System.getenv("MAVEN_USERNAME")
+            password = System.getenv("MAVEN_PASSWORD")
+        }
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -131,32 +146,6 @@ publishing {
                 }
             }
         }
-    }
-		
-    repositories {
-        
-	maven {		
-            // MavenCentral
-			name = "OSSRH"
-            val releasesRepoUrl = "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"                                   
-            val snapshotsRepoUrl = "https://central.sonatype.com/repository/maven-snapshots/"
-            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")				
-            }			
-        }
-/*
-        maven {
-            // GitHubPackages
-			name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/DieTechniker/secon-tool")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }			
-        }		
-*/	
     }
 }
 
