@@ -101,9 +101,6 @@ license {
 
 nexusPublishing {
     repositories {
-        sonatype()
-    }
-    repositories {
         // see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuration
         sonatype {
             nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
