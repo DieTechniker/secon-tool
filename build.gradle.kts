@@ -19,7 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 group = "de.tk.opensource"
-version = "1.2.1-SNAPSHOT"
+version = "1.2.1"
 
 application {
     mainClassName = "de.tk.opensource.secon.Main"
