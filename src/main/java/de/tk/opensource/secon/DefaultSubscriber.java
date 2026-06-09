@@ -20,12 +20,31 @@
  */
 package de.tk.opensource.secon;
 
-import static de.tk.opensource.secon.SECON.callable;
-import static de.tk.opensource.secon.SECON.socket;
-import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
-import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
+import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.api.function.XFunction;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cms.CMSEnvelopedDataParser;
+import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
+import org.bouncycastle.cms.CMSSignedDataParser;
+import org.bouncycastle.cms.CMSSignedDataStreamGenerator;
+import org.bouncycastle.cms.CMSTypedStream;
+import org.bouncycastle.cms.KeyTransRecipientId;
+import org.bouncycastle.cms.RecipientId;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OutputEncryptor;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 
+import javax.security.auth.x500.X500Principal;
 import java.io.BufferedInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -37,45 +56,14 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-import javax.security.auth.x500.X500Principal;
-
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.cms.CMSAlgorithm;
-import org.bouncycastle.cms.CMSEnvelopedDataParser;
-import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSSignedDataParser;
-import org.bouncycastle.cms.CMSSignedDataStreamGenerator;
-import org.bouncycastle.cms.CMSTypedStream;
-import org.bouncycastle.cms.KeyTransRecipientId;
-import org.bouncycastle.cms.RecipientId;
-import org.bouncycastle.cms.RecipientInformation;
-import org.bouncycastle.cms.SignerId;
-import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationVerifier;
-import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
-import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
-import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.OutputEncryptor;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.bouncycastle.util.Store;
-
-import global.namespace.fun.io.api.Socket;
-import global.namespace.fun.io.api.function.XFunction;
-
+import static de.tk.opensource.secon.SECON.callable;
+import static de.tk.opensource.secon.SECON.socket;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 /**
  * @author  Wolfgang Schmiesing
  * @author  Christian Schlichtherle
@@ -187,7 +175,11 @@ final class DefaultSubscriber implements Subscriber {
 				@SuppressWarnings("unchecked")
 				private void verifyIo() throws IOException {
 					try {
-						for (final SignerInformation info : parser.getSignerInfos()) {
+                        SignerInformationStore signerInfos = parser.getSignerInfos();
+                        if(signerInfos.getSigners().isEmpty()) {
+                            throw new SeconException("Message contains no signatures");
+                        }
+						for (final SignerInformation info : signerInfos) {
 							signatureValidator.verify(info, parser.getCertificates());
 						}
 					} catch (IOException | RuntimeException e) {
