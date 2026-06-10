@@ -15,7 +15,7 @@ jobs:
           java-version: 11
       - id: gradle-publish
         name: Publish to the Maven Central Repository
-        run: ./gradlew publish --info
+        run: ./gradlew publishToSonatype closeSonatypeStagingRepository --info
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
