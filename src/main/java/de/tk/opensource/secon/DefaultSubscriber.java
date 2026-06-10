@@ -35,7 +35,6 @@ import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
@@ -56,6 +55,7 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -175,11 +175,11 @@ final class DefaultSubscriber implements Subscriber {
 				@SuppressWarnings("unchecked")
 				private void verifyIo() throws IOException {
 					try {
-                        SignerInformationStore signerInfos = parser.getSignerInfos();
-                        if(signerInfos.getSigners().isEmpty()) {
+                        Collection<SignerInformation> signers = parser.getSignerInfos().getSigners();
+                        if(signers.isEmpty()) {
                             throw new SeconException("Message contains no signatures");
                         }
-						for (final SignerInformation info : signerInfos) {
+						for (final SignerInformation info : signers) {
 							signatureValidator.verify(info, parser.getCertificates());
 						}
 					} catch (IOException | RuntimeException e) {
