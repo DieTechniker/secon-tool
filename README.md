@@ -22,14 +22,14 @@ Maven:
 <dependency>
     <groupId>de.tk.opensource</groupId>
     <artifactId>secon-tool</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
 </dependency>
 ```
 
 Gradle:
 
 ```kotlin
-implementation 'de.tk.opensource:secon-tool:1.2.1'
+implementation 'de.tk.opensource:secon-tool:1.2.2'
 ```
 
 ### Build
