@@ -80,13 +80,16 @@ final class SignatureValidator {
 
 	private void verifyIssuer(X509Certificate certToVerify, X509Certificate parent) throws CertificateVerificationException {
 		try {
-			certToVerify.verify(parent.getPublicKey());
+            if(!Certificates.isCA(parent)) {
+                throw new CertificateVerificationException(String.format("Issuer certificate is not a CA certificate for certificate: %s", certToVerify.getSubjectX500Principal().getName()));
+            }
+			Certificates.verify(certToVerify, parent);
 		} catch (Exception e) {
 			throw new CertificateVerificationException(String.format("Invalid issuer certificate for certificate: %s", certToVerify.getSubjectX500Principal().getName()), e);
 		}	
 	}
 
-	/**
+    /**
 	 * Prüft die Signatur anhand des gegebenen Zertifikats 
 	 * 
 	 * @param info Signaturinformation aus der Nachricht
@@ -127,12 +130,6 @@ final class SignatureValidator {
 			}
 		}
 		return Optional.empty();
-	}
-
-	private static X509CertSelector selector(final X500Principal subject) {
-		final X509CertSelector sel = new X509CertSelector();
-		sel.setSubject(subject);
-		return sel;
 	}
 
 	private static X509CertSelector selector(final SignerId id) {

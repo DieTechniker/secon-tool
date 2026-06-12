@@ -67,21 +67,16 @@ final class KeyStoreDirectory implements Directory {
 		selector.setSubject(cert.getIssuerX500Principal());
 
 		// find first matching issuer since principal might not be unique
-		Optional<X509Certificate> issuer = certificates(selector).filter(p -> {
-			try {
-				cert.verify(p.getPublicKey());
-				return true;
-			} catch (Exception e) {
-				return false;
-			}
-		}).findFirst();
-		if(issuer.isPresent()) {
-			issuerCache.put(cert, issuer.get());
-		}
+		Optional<X509Certificate> issuer = certificates(selector)
+                .filter(Certificates::isCA)
+                .filter(i -> Certificates.signedBy(cert, i))
+                .findFirst();
+        issuer.ifPresent(x509Certificate -> issuerCache.put(cert, x509Certificate));
 		return issuer;
 	}
 
-	private Stream<X509Certificate> certificateStream(final String alias) {
+
+    private Stream<X509Certificate> certificateStream(final String alias) {
 		try {
 			return certificate(alias).map(Stream::of).orElseGet(Stream::empty);
 		} catch (KeyStoreException e) {
