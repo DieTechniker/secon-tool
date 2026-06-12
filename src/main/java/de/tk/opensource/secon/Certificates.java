@@ -14,6 +14,9 @@ import java.security.cert.X509Certificate;
  */
 final class Certificates {
 
+    private Certificates() {
+    }
+
     static boolean isCA(X509Certificate p) {
         return p.getBasicConstraints() >= 0;
     }
@@ -25,10 +28,6 @@ final class Certificates {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    static boolean selfSigned(X509Certificate cert) {
-        return signedBy(cert, cert);
     }
 
     static void verify(X509Certificate cert, X509Certificate issuer) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
