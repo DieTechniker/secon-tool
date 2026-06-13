@@ -20,7 +20,7 @@
  */
 group = "de.tk.opensource"
 
-version = "1.2.3-SNAPSHOT"
+version = "1.2.3"
 
 application {
     mainClassName = "de.tk.opensource.secon.Main"
