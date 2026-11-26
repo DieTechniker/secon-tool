@@ -32,4 +32,8 @@ public class InvalidSignatureException extends SeconException {
 
     InvalidSignatureException() {
     }
+
+    InvalidSignatureException(Throwable cause) {
+        super(cause);
+    }
 }

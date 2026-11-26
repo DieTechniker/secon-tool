@@ -106,19 +106,15 @@ final class SignatureValidator {
 			Exception {
 		final SignerInformationVerifier ver = new JcaSimpleSignerInfoVerifierBuilder().setProvider(PROVIDER_NAME)
 				.build(signerCert);
-		if (!verifySignerInformation(info, ver)) {
-			throw new InvalidSignatureException();
-		}
+        try {
+            if(!info.verify(ver)) {
+                throw new InvalidSignatureException();
+            }
+        } catch (CMSVerifierCertificateNotValidException e) {
+            throw new InvalidSignatureException(e);
+        }
 		verifier.verify(signerCert);
 	}
-
-    private static boolean verifySignerInformation(SignerInformation info, SignerInformationVerifier ver) throws CMSException {
-        try {
-            return info.verify(ver);
-        } catch (CMSVerifierCertificateNotValidException e) {
-            return false;
-        }
-    }
 
 	private Optional<X509Certificate> certificate(SignerId id) throws Exception {
 		final X509CertSelector selector = selector(id);
