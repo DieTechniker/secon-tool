@@ -14,6 +14,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSVerifierCertificateNotValidException;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationVerifier;
@@ -105,9 +106,13 @@ final class SignatureValidator {
 			Exception {
 		final SignerInformationVerifier ver = new JcaSimpleSignerInfoVerifierBuilder().setProvider(PROVIDER_NAME)
 				.build(signerCert);
-		if (!info.verify(ver)) {
-			throw new InvalidSignatureException();
-		}
+        try {
+            if(!info.verify(ver)) {
+                throw new InvalidSignatureException();
+            }
+        } catch (CMSVerifierCertificateNotValidException e) {
+            throw new InvalidSignatureException(e);
+        }
 		verifier.verify(signerCert);
 	}
 
